@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Create axios instance with base configuration
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api',
   timeout: 30000, // 30 seconds timeout
   headers: {
     'Content-Type': 'application/json',
@@ -223,12 +223,12 @@ export const authAPI = {
   /**
    * Get user profile
    */
-  getProfile: () => api.get('/auth/profile'),
+  getProfile: () => api.get('/auth/me'),
   
   /**
    * Update user profile
    */
-  updateProfile: (userData) => api.put('/auth/profile', userData),
+  updateProfile: (userData) => api.put('/auth/me', userData),
   
   /**
    * Logout (client-side token removal)

@@ -1,19 +1,18 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { authAPI, tokenManager } from '../utils/api';
+import { useAuth } from '../context/AuthContext';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 
 const Signup = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const { signup, loading: authLoading } = useAuth();
   const [formData, setFormData] = useState({
-    username: '',
     email: '',
     password: '',
     confirmPassword: '',
-    languagePreference: i18n.language || 'en',
-    agreeToTerms: false
+    languagePreference: i18n.language || 'en'
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -23,15 +22,7 @@ const Signup = () => {
 
   const validateField = (name, value, formData = {}) => {
     switch (name) {
-      case 'username':
-        if (!value) return t('auth.usernameRequired');
-        if (value.length < 3) {
-          return t('auth.usernameMinLength') || 'Username must be at least 3 characters';
-        }
-        if (!/^[a-zA-Z0-9_]+$/.test(value)) {
-          return t('auth.usernameInvalid') || 'Username can only contain letters, numbers, and underscores';
-        }
-        return '';
+
       case 'email':
         if (!value) return t('auth.emailRequired');
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
@@ -53,9 +44,7 @@ const Signup = () => {
           return t('auth.passwordMismatch');
         }
         return '';
-      case 'agreeToTerms':
-        if (!value) return t('auth.agreeToTermsRequired') || 'You must agree to the terms';
-        return '';
+
       default:
         return '';
     }
@@ -76,7 +65,7 @@ const Signup = () => {
     }
     
     // Validate field on change
-    if (type !== 'checkbox' || name === 'agreeToTerms') {
+    if (type !== 'checkbox') {
       const errorMsg = validateField(name, fieldValue, formData);
       if (errorMsg) {
         setFieldErrors(prev => ({ ...prev, [name]: errorMsg }));
@@ -92,42 +81,50 @@ const Signup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log('🚀 Form submitted!', formData);
     setError('');
     setFieldErrors({});
 
-    // Validate all fields
+    // Validate only required fields for API
     const errors = {};
-    Object.keys(formData).forEach(field => {
-      if (field !== 'languagePreference') {
-        const errorMsg = validateField(field, formData[field], formData);
-        if (errorMsg) errors[field] = errorMsg;
-      }
+    const requiredFields = ['email', 'password', 'confirmPassword'];
+    
+    requiredFields.forEach(field => {
+      const errorMsg = validateField(field, formData[field], formData);
+      if (errorMsg) errors[field] = errorMsg;
     });
+
+    console.log('🔍 Validation errors:', errors);
 
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
+      console.log('❌ Form validation failed, not submitting');
       return;
     }
+
+    console.log('✅ Form validation passed, proceeding with signup');
 
     setLoading(true);
 
     try {
-      const response = await authAPI.signup({
-        username: formData.username,
+      console.log('🔄 Attempting signup with:', { email: formData.email });
+      
+      const result = await signup({
         email: formData.email,
         password: formData.password,
-        languagePreference: formData.languagePreference
+        language_preference: formData.languagePreference
       });
       
-      const { token } = response.data.data;
-      tokenManager.setToken(token);
+      console.log('✅ Signup successful:', result.user.email);
       
       // Store language preference
       localStorage.setItem('preferredLanguage', formData.languagePreference);
       
       navigate('/chat', { replace: true });
+      
     } catch (error) {
-      setError(error.message || t('auth.signupError'));
+      console.error('❌ Signup failed:', error);
+      setError(error.message || t('auth.signupError') || 'Registration failed');
     } finally {
       setLoading(false);
     }
@@ -214,28 +211,7 @@ const Signup = () => {
 
           {/* Signup Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Username Field */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-300">
-                {t('auth.username') || 'Username'}
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                </div>
-                <input
-                  type="text"
-                  name="username"
-                  value={formData.username}
-                  onChange={handleChange}
-                  placeholder={t('auth.usernamePlaceholder') || 'Choose a username'}
-                  className="w-full pl-12 pr-4 py-4 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300"
-                  required
-                />
-              </div>
-            </div>
+
 
             {/* Email Field */}
             <div className="space-y-2">
@@ -306,13 +282,33 @@ const Signup = () => {
               </div>
             </div>
 
+            {/* Display Validation Errors */}
+            {Object.keys(fieldErrors).length > 0 && (
+              <div className="bg-red-500/20 border border-red-500/30 rounded-xl p-4">
+                <h4 className="text-red-400 font-medium mb-2">Please fix the following errors:</h4>
+                <ul className="text-red-300 text-sm space-y-1">
+                  {Object.entries(fieldErrors).map(([field, fieldError]) => (
+                    <li key={field}>• <span className="capitalize">{field}</span>: {fieldError}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Display General Error */}
+            {error && (
+              <div className="bg-red-500/20 border border-red-500/30 rounded-xl p-4">
+                <p className="text-red-300 text-sm">{error}</p>
+              </div>
+            )}
+
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || authLoading}
+              onClick={() => console.log('🖱️ Signup button clicked!')}
               className="w-full bg-gradient-to-r from-green-600 to-purple-600 hover:from-green-700 hover:to-purple-700 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
-              {loading ? (
+              {loading || authLoading ? (
                 <div className="flex items-center justify-center gap-2">
                   <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                   {t('auth.creatingAccount') || 'Creating Account...'}

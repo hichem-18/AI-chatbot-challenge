@@ -93,7 +93,7 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/auth/profile",
+              "raw": "{{baseUrl}}/api/auth/me",
               "host": ["{{baseUrl}}"],
               "path": ["api", "auth", "profile"]
             }

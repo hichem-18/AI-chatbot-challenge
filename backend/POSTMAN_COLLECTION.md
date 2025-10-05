@@ -72,7 +72,7 @@ Expected Response:
 ### **3. Get User Profile**
 ```
 Method: GET
-URL: {{baseUrl}}/api/auth/profile
+URL: {{baseUrl}}/api/auth/me
 Headers: 
 - Authorization: Bearer {{jwtToken}}
 - Content-Type: application/json

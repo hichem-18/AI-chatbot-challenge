@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { authAPI, tokenManager } from '../utils/api';
-import { dummyUsers } from '../assets/assets';
+import { registerUser, loginUser, getCurrentUser, logoutUser, tokenManager } from '../services/authService';
 
 const AuthContext = createContext(null);
 
@@ -14,31 +13,32 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [token, setToken] = useState(tokenManager.getToken());
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Check if user is logged in on mount
+  // Load user on mount if token exists
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        // For frontend testing, auto-login with dummy user
-        // Comment this out when connecting to real backend
-        console.log('🎭 Frontend Testing Mode: Auto-logging in with dummy user');
-        setUser(dummyUsers);
-        setIsAuthenticated(true);
-        setLoading(false);
-        return;
-        
-        // Real authentication logic (disabled for frontend testing)
         const token = tokenManager.getToken();
-        if (token && tokenManager.isAuthenticated()) {
-          const userInfo = tokenManager.getUserInfo();
-          setUser(userInfo);
-          setIsAuthenticated(true);
+        if (token) {
+          console.log('🔑 Token found, verifying with backend...');
+          const result = await getCurrentUser();
+          
+          if (result.success) {
+            setUser(result.data.user);
+            setIsAuthenticated(true);
+            console.log('✅ User authenticated:', result.data.user.email);
+          } else {
+            console.log('❌ Token invalid, removing...');
+            tokenManager.removeToken();
+          }
+        } else {
+          console.log('🔓 No token found, user not authenticated');
         }
       } catch (error) {
         console.error('Auth initialization error:', error);
-        // Clear invalid token
         tokenManager.removeToken();
       } finally {
         setLoading(false);
@@ -51,25 +51,23 @@ export const AuthProvider = ({ children }) => {
   const login = async (credentials) => {
     try {
       setLoading(true);
-      const response = await authAPI.login(credentials);
+      console.log('🔄 Logging in user:', credentials.email);
       
-      if (response.data?.success) {
-        const { token, user: userData } = response.data.data;
-        
-        // Store token
-        tokenManager.setToken(token);
-        
-        // Update state
-        setUser(userData);
+      const result = await loginUser(credentials);
+      
+      if (result.success) {
+        setUser(result.data.user);
+        setToken(result.data.token);
         setIsAuthenticated(true);
-        
-        return { success: true, user: userData };
+        console.log('✅ Login successful:', result.data.user.email);
+        return { success: true, user: result.data.user };
       } else {
-        throw new Error(response.data?.message || 'Login failed');
+        console.log('❌ Login failed:', result.error);
+        throw new Error(result.error);
       }
     } catch (error) {
       console.error('Login error:', error);
-      throw new Error(error.response?.data?.message || error.message || 'Login failed');
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -78,25 +76,23 @@ export const AuthProvider = ({ children }) => {
   const signup = async (userData) => {
     try {
       setLoading(true);
-      const response = await authAPI.signup(userData);
+      console.log('🔄 Registering user:', userData.email);
       
-      if (response.data?.success) {
-        const { token, user: newUser } = response.data.data;
-        
-        // Store token
-        tokenManager.setToken(token);
-        
-        // Update state
-        setUser(newUser);
+      const result = await registerUser(userData);
+      
+      if (result.success) {
+        setUser(result.data.user);
+        setToken(result.data.token);
         setIsAuthenticated(true);
-        
-        return { success: true, user: newUser };
+        console.log('✅ Registration successful:', result.data.user.email);
+        return { success: true, user: result.data.user };
       } else {
-        throw new Error(response.data?.message || 'Signup failed');
+        console.log('❌ Registration failed:', result.error);
+        throw new Error(result.error);
       }
     } catch (error) {
       console.error('Signup error:', error);
-      throw new Error(error.response?.data?.message || error.message || 'Signup failed');
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -105,22 +101,57 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       setLoading(true);
+      console.log('🔄 Logging out user');
       
-      // Call logout API if available
-      try {
-        await authAPI.logout();
-      } catch (error) {
-        // Continue with logout even if API call fails
-        console.warn('Logout API call failed:', error);
-      }
+      const result = await logoutUser();
       
-      // Clear token and state
-      tokenManager.removeToken();
+      // Clear state regardless of API response
       setUser(null);
+      setToken(null);
       setIsAuthenticated(false);
+      
+      console.log('✅ User logged out');
+      
+      // Redirect to login page
+      window.location.href = '/login';
       
     } catch (error) {
       console.error('Logout error:', error);
+      // Still clear state even if logout API fails
+      setUser(null);
+      setIsAuthenticated(false);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadUser = async () => {
+    try {
+      setLoading(true);
+      console.log('🔄 Loading current user...');
+      
+      const result = await getCurrentUser();
+      
+      if (result.success) {
+        setUser(result.data.user);
+        setIsAuthenticated(true);
+        console.log('✅ User loaded:', result.data.user.email);
+        return { success: true, user: result.data.user };
+      } else {
+        console.log('❌ Failed to load user:', result.error);
+        tokenManager.removeToken();
+        setToken(null);
+        setUser(null);
+        setIsAuthenticated(false);
+        return { success: false, error: result.error };
+      }
+    } catch (error) {
+      console.error('Load user error:', error);
+      tokenManager.removeToken();
+      setToken(null);
+      setUser(null);
+      setIsAuthenticated(false);
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -132,11 +163,13 @@ export const AuthProvider = ({ children }) => {
 
   const value = {
     user,
+    token,
     loading,
     isAuthenticated,
     login,
     signup,
     logout,
+    loadUser,
     updateUser
   };
 

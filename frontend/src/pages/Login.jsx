@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { authAPI, tokenManager } from '../utils/api';
+import { useAuth } from '../context/AuthContext';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 
 const Login = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
+  const { login, loading: authLoading } = useAuth();
+  
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -84,12 +86,14 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const response = await authAPI.login({
+      console.log('🔄 Attempting login with:', { email: formData.email });
+      
+      const result = await login({
         email: formData.email,
         password: formData.password
       });
-      const { token } = response.data.data;
-      tokenManager.setToken(token);
+      
+      console.log('✅ Login successful:', result.user.email);
       
       // Store remember me preference
       if (formData.rememberMe) {
@@ -98,8 +102,10 @@ const Login = () => {
       
       // Redirect to intended page
       navigate(from, { replace: true });
+      
     } catch (error) {
-      setError(error.message || t('auth.loginError'));
+      console.error('❌ Login failed:', error);
+      setError(error.message || t('auth.loginError') || 'Login failed');
     } finally {
       setLoading(false);
     }
@@ -227,10 +233,10 @@ const Login = () => {
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || authLoading}
               className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
-              {loading ? (
+              {loading || authLoading ? (
                 <div className="flex items-center justify-center gap-2">
                   <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                   {t('auth.signingIn') || 'Signing In...'}
