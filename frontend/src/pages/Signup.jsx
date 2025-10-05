@@ -81,7 +81,6 @@ const Signup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('🚀 Form submitted!', formData);
     setError('');
     setFieldErrors({});
 
@@ -94,30 +93,22 @@ const Signup = () => {
       if (errorMsg) errors[field] = errorMsg;
     });
 
-    console.log('🔍 Validation errors:', errors);
 
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
-      console.log('❌ Form validation failed, not submitting');
       return;
     }
 
-    console.log('✅ Form validation passed, proceeding with signup');
 
     setLoading(true);
 
     try {
-      console.log('🔄 Attempting signup with:', { email: formData.email });
       
       const result = await signup({
         email: formData.email,
         password: formData.password,
         language_preference: formData.languagePreference
-      });
-      
-      console.log('✅ Signup successful:', result.user.email);
-      
-      // Store language preference
+      });      // Store language preference
       localStorage.setItem('preferredLanguage', formData.languagePreference);
       
       navigate('/chat', { replace: true });
@@ -305,7 +296,7 @@ const Signup = () => {
             <button
               type="submit"
               disabled={loading || authLoading}
-              onClick={() => console.log('🖱️ Signup button clicked!')}
+
               className="w-full bg-gradient-to-r from-green-600 to-purple-600 hover:from-green-700 hover:to-purple-700 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
               {loading || authLoading ? (

@@ -5,6 +5,7 @@
 import { processConversationGraph } from '../services/langGraphAgent.js';
 import { getChatResponse, clearUserMemory } from '../services/aiService.js';
 import { ChatHistory, UserSummary, sequelize } from '../models/index.js';
+import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
@@ -271,7 +272,7 @@ export const getConversationHistory = async (req, res) => {
       userId,
       ...(conversationId === 'default' 
         ? { 
-            [sequelize.Op.or]: [
+            [Op.or]: [
               { conversationId: 'default' },
               { conversationId: null }
             ]
@@ -440,7 +441,7 @@ export const deleteConversation = async (req, res) => {
       userId,
       ...(conversationId === 'default' 
         ? { 
-            [sequelize.Op.or]: [
+            [Op.or]: [
               { conversationId: 'default' },
               { conversationId: null }
             ]
@@ -457,7 +458,6 @@ export const deleteConversation = async (req, res) => {
     // Clear memory for this conversation
     clearUserMemory(userId, conversationId);
 
-    console.log(`🗑️ Deleted conversation ${conversationId} for user ${userId} (${deletedCount} messages)`);
 
     res.json({
       success: true,

@@ -87,7 +87,22 @@
     "searchConversations": "البحث في المحادثات...",
     "recentChats": "المحادثات الأخيرة",
     "noConversations": "لا توجد محادثات بعد",
-    "messages": "رسائل"
+    "messages": "رسائل",
+    "aiAssistant": "مساعد الذكاء الاصطناعي",
+    "ai": "ذكاء اصطناعي",
+    "aiAgent": "وكيل الذكاء الاصطناعي",
+    "askAnything": "اسأل عن أي شيء",
+    "assistantReady": "أنا مساعدك الذكي، جاهز لمساعدتك في أي أسئلة أو مهام تخطر ببالك.",
+    "newConversation": "محادثة جديدة",
+    "creating": "جاري الإنشاء...",
+    "loadingConversations": "جاري تحميل المحادثات...",
+    "noSearchResults": "لا توجد محادثات",
+    "createFirstConversation": "اضغط \"محادثة جديدة\" لبدء محادثتك الأولى",
+    "typeMessage": "اكتب رسالتك هنا...",
+    "confirmDelete": "تأكيد الحذف",
+    "deleteConversationMessage": "هل أنت متأكد من حذف هذه المحادثة؟ لا يمكن التراجع عن هذا الإجراء.",
+    "cancel": "إلغاء",
+    "delete": "حذف"
   },
   "profile": {
     "title": "الملف الشخصي",

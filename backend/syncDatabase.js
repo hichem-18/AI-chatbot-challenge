@@ -4,7 +4,6 @@ import { testConnection } from './configs/database.js';
 // Database sync script
 const syncDatabase = async (options = {}) => {
   try {
-    console.log('🔄 Starting database synchronization...');
     
     // Test connection first
     await testConnection();
@@ -19,15 +18,9 @@ const syncDatabase = async (options = {}) => {
     };
 
     await sequelize.sync(syncOptions);    
-    console.log('✅ Database synchronized successfully!');
-    console.log('📋 Tables created/updated:');
-    console.log('  - users');
-    console.log('  - chat_history');
-    console.log('  - user_summaries');
     
     return true;
   } catch (error) {
-    console.error('❌ Database synchronization failed:', error);
     return false;
   }
 };
@@ -35,7 +28,6 @@ const syncDatabase = async (options = {}) => {
 // Create sample data (optional)
 const createSampleData = async () => {
   try {
-    console.log('🌱 Creating sample data...');
     
     // Create a sample user
     const sampleUser = await User.create({
@@ -44,7 +36,6 @@ const createSampleData = async () => {
       language_preference: 'en'
     });
     
-    console.log('👤 Sample user created:', sampleUser.email);
     
     // Create sample chat history
     const chatHistory = await ChatHistory.create({
@@ -55,7 +46,6 @@ const createSampleData = async () => {
       language: 'en'
     });
     
-    console.log('💬 Sample chat history created');
     
     // Create sample user summary
     const userSummary = await UserSummary.create({
@@ -64,7 +54,6 @@ const createSampleData = async () => {
       language: 'en'
     });
     
-    console.log('📝 Sample user summary created');
     
     return { user: sampleUser, chatHistory, userSummary };
   } catch (error) {
@@ -81,7 +70,6 @@ const main = async () => {
   const alter = args.includes('--alter');
   const sample = args.includes('--sample');
   
-  console.log('📋 Arguments parsed:', { force, alter, sample });
   
   // Sync database
   const success = await syncDatabase({ force, alter });
@@ -92,7 +80,6 @@ const main = async () => {
   
   // Close connection
   await sequelize.close();
-  console.log('🔒 Database connection closed');
 };
 
 // Export functions for use in other files
@@ -100,7 +87,6 @@ export { syncDatabase, createSampleData };
 
 // Run if this file is executed directly
 if (import.meta.url === `file://${process.argv[1]}`) {
-  console.log('🚀 Starting syncDatabase.js script...');
   main().catch((error) => {
     console.error('❌ Fatal error in main():', error);
     process.exit(1);

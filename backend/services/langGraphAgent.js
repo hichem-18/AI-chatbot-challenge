@@ -169,7 +169,6 @@ Help Response:`,
  */
 async function routeQuery(state) {
   try {
-    console.log(`🔀 Routing query for user ${state.userId}`);
     
     const message = state.messages[state.messages.length - 1];
     const language = state.language || 'en';
@@ -182,7 +181,6 @@ async function routeQuery(state) {
     });
     
     const intent = intentResponse.content.toLowerCase().trim();
-    console.log(`📍 Detected intent: ${intent}`);
     
     // Get recent conversation context
     const recentHistory = await ChatHistory.findAll({
@@ -215,7 +213,6 @@ async function routeQuery(state) {
  */
 async function respondChat(state) {
   try {
-    console.log(`💬 Generating casual response for user ${state.userId}`);
     
     const message = state.messages[state.messages.length - 1];
     const language = state.language || 'en';
@@ -251,7 +248,6 @@ async function respondChat(state) {
  */
 async function respondTechnical(state) {
   try {
-    console.log(`🔧 Generating technical response for user ${state.userId}`);
     
     const message = state.messages[state.messages.length - 1];
     const language = state.language || 'en';
@@ -287,7 +283,6 @@ async function respondTechnical(state) {
  */
 async function generateSummary(state) {
   try {
-    console.log(`📝 Generating summary for user ${state.userId}`);
     
     const language = state.language || 'en';
     
@@ -318,7 +313,6 @@ async function generateSummary(state) {
       language: language
     });
     
-    console.log(`✅ Summary saved for user ${state.userId}`);
     
     return {
       ...state,
@@ -342,7 +336,6 @@ async function generateSummary(state) {
  */
 async function respondHelp(state) {
   try {
-    console.log(`❓ Generating help response for user ${state.userId}`);
     
     const message = state.messages[state.messages.length - 1];
     const language = state.language || 'en';
@@ -394,7 +387,6 @@ function routeToResponse(state) {
  * Create and compile the conversation graph
  */
 function createConversationGraph() {
-  console.log('🏗️ Building conversation graph...');
   
   const workflow = new StateGraph({
     channels: ConversationState
@@ -430,7 +422,6 @@ function createConversationGraph() {
 
   // Compile the graph
   const app = workflow.compile();
-  console.log('✅ Conversation graph compiled successfully');
   
   return app;
 }
@@ -445,7 +436,6 @@ function createConversationGraph() {
  */
 export async function processConversationGraph(userId, message, language = 'en', conversationId = 'default') {
   try {
-    console.log(`🚀 Processing conversation graph for user ${userId}`);
     
     const graph = createConversationGraph();
     
@@ -472,7 +462,7 @@ export async function processConversationGraph(userId, message, language = 'en',
       language
     });
     
-    console.log(`✅ Conversation processed successfully for user ${userId}`);
+    (`✅ Conversation processed successfully for user ${userId}`);
     return result.response;
     
   } catch (error) {

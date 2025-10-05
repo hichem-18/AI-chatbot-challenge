@@ -108,7 +108,6 @@ export const initializeChatModel = (modelName) => {
       throw new Error(`Unsupported provider: ${config.provider}`);
     }
 
-    console.log(`✅ Initialized ${modelName} chat model`);
     return chatModel;
   } catch (error) {
     console.error(`❌ Error initializing chat model ${modelName}:`, error);
@@ -133,7 +132,6 @@ const getUserMemory = (userId, conversationId = 'default') => {
       returnMessages: false
     });
     userMemories.set(memoryKey, memory);
-    console.log(`📝 Created new memory for user ${userId}, conversation ${conversationId}`);
   }
   
   return userMemories.get(memoryKey);
@@ -165,7 +163,6 @@ const getUserChain = (userId, modelName, language, conversationId = 'default') =
     });
     
     userChains.set(chainKey, chain);
-    console.log(`🔗 Created new conversation chain for user ${userId}`);
   }
   
   return userChains.get(chainKey);
@@ -196,8 +193,6 @@ export const getChatResponse = async (userId, message, modelName = "gpt-3.5-turb
       language = "en";
     }
 
-    console.log(`💬 Processing message for user ${userId} with ${modelName} in ${language}`);
-
     // Get or create conversation chain
     const chain = getUserChain(userId, modelName, language, conversationId);
 
@@ -208,7 +203,6 @@ export const getChatResponse = async (userId, message, modelName = "gpt-3.5-turb
 
     const aiResponse = response.response || response.text || "I apologize, but I couldn't generate a response.";
 
-    console.log(`✅ Generated response for user ${userId}: ${aiResponse.substring(0, 100)}...`);
     return aiResponse;
 
   } catch (error) {
@@ -235,13 +229,11 @@ export const clearUserMemory = (userId, conversationId = 'default') => {
   // Remove memory
   if (userMemories.has(memoryKey)) {
     userMemories.delete(memoryKey);
-    console.log(`🗑️ Cleared memory for user ${userId}, conversation ${conversationId}`);
   }
   
   // Remove associated chains
   chainKeys.forEach(key => {
     userChains.delete(key);
-    console.log(`🗑️ Cleared chain: ${key}`);
   });
 };
 

@@ -23,19 +23,15 @@ export const AuthProvider = ({ children }) => {
       try {
         const token = tokenManager.getToken();
         if (token) {
-          console.log('🔑 Token found, verifying with backend...');
           const result = await getCurrentUser();
           
           if (result.success) {
             setUser(result.data.user);
             setIsAuthenticated(true);
-            console.log('✅ User authenticated:', result.data.user.email);
           } else {
-            console.log('❌ Token invalid, removing...');
             tokenManager.removeToken();
           }
         } else {
-          console.log('🔓 No token found, user not authenticated');
         }
       } catch (error) {
         console.error('Auth initialization error:', error);
@@ -51,7 +47,6 @@ export const AuthProvider = ({ children }) => {
   const login = async (credentials) => {
     try {
       setLoading(true);
-      console.log('🔄 Logging in user:', credentials.email);
       
       const result = await loginUser(credentials);
       
@@ -59,10 +54,8 @@ export const AuthProvider = ({ children }) => {
         setUser(result.data.user);
         setToken(result.data.token);
         setIsAuthenticated(true);
-        console.log('✅ Login successful:', result.data.user.email);
         return { success: true, user: result.data.user };
       } else {
-        console.log('❌ Login failed:', result.error);
         throw new Error(result.error);
       }
     } catch (error) {
@@ -76,7 +69,6 @@ export const AuthProvider = ({ children }) => {
   const signup = async (userData) => {
     try {
       setLoading(true);
-      console.log('🔄 Registering user:', userData.email);
       
       const result = await registerUser(userData);
       
@@ -84,14 +76,11 @@ export const AuthProvider = ({ children }) => {
         setUser(result.data.user);
         setToken(result.data.token);
         setIsAuthenticated(true);
-        console.log('✅ Registration successful:', result.data.user.email);
         return { success: true, user: result.data.user };
       } else {
-        console.log('❌ Registration failed:', result.error);
         throw new Error(result.error);
       }
     } catch (error) {
-      console.error('Signup error:', error);
       throw error;
     } finally {
       setLoading(false);
@@ -101,7 +90,6 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       setLoading(true);
-      console.log('🔄 Logging out user');
       
       const result = await logoutUser();
       
@@ -110,7 +98,6 @@ export const AuthProvider = ({ children }) => {
       setToken(null);
       setIsAuthenticated(false);
       
-      console.log('✅ User logged out');
       
       // Redirect to login page
       window.location.href = '/login';
@@ -128,17 +115,14 @@ export const AuthProvider = ({ children }) => {
   const loadUser = async () => {
     try {
       setLoading(true);
-      console.log('🔄 Loading current user...');
       
       const result = await getCurrentUser();
       
       if (result.success) {
         setUser(result.data.user);
         setIsAuthenticated(true);
-        console.log('✅ User loaded:', result.data.user.email);
         return { success: true, user: result.data.user };
       } else {
-        console.log('❌ Failed to load user:', result.error);
         tokenManager.removeToken();
         setToken(null);
         setUser(null);

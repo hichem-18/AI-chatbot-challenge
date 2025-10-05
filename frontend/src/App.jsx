@@ -58,17 +58,8 @@ const App = () => {
         } />
         
         {/* Legacy chat route - uses old sidebar + chatbox layout */}
-        <Route path="/legacy-chat" element={
-          <ProtectedRoute>
-            <div className="dark:bg-gradient-to-b from-[#242124] to-[#000000]">
-              <div className="flex h-screen w-screen">
-                {!isMenuOpen && <img src={assets.menu_icon} className='absolute top-3 left-3 w-8 h-8 cursor-pointer md:hidden dark:invert not-dark:invert-0' alt="menu" onClick={() => setIsMenuOpen(true)}/> }
-                <Sidebar isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
-                <ChatBox />
-              </div>
-            </div>
-          </ProtectedRoute>
-        } />
+       
+       
       </Routes>
     </>
   )

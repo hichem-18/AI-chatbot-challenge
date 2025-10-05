@@ -62,7 +62,6 @@ app.get('/api/db', async (req, res) => {
 // Test database connection on startup
 const startServer = async () => {
   try {
-    console.log('🔄 Testing database connection...');
     await testConnection();
     console.log('✅ Database connected successfully');
     

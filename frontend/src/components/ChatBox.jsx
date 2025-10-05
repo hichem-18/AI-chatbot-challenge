@@ -12,7 +12,7 @@ const ChatBox = () => {
   const { selectedChat, theme } = useAppContext();
   const [messages, setMessages] = useState([]);
   const [prompt, setPrompt] = useState('');
-  const [model, setModel] = useState('gpt-3.5-turbo');
+  const [agent, setAgent] = useState('langgraph-agent');
   const onSubmit = async(e) => {
     e.preventDefault();
     if (!prompt.trim()) return;
@@ -26,9 +26,10 @@ const ChatBox = () => {
     
     // Add bot response (dummy)
     const botMessage = {
-      content: `Thanks for your message: "${prompt}". This is a demo response.`,
-      role: 'bot',
-      timestamp: new Date().toISOString()
+      content: `Thanks for your message: "${prompt}". This is a demo response from ${agent}.`,
+      role: 'assistant',
+      timestamp: new Date().toISOString(),
+      model_name: agent
     };
     
     setMessages(prev => [...prev, userMessage, botMessage]);
@@ -40,7 +41,7 @@ const ChatBox = () => {
     }
   }, [selectedChat]);
 useEffect(() => {
-  console.log("selectedChat changed:", selectedChat?.name);
+
 }, [selectedChat]);
 useEffect(() => {
     if (containerRef.current) {
@@ -53,16 +54,36 @@ useEffect(() => {
   return (
     <div className='flex-1 flex flex-col h-full relative p-6 md:p-8'>
         {/* Chat Header */}
-        {selectedChat && (
-          <div className="mb-6 p-4 bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border border-white/30 dark:border-gray-700/30 rounded-2xl">
-            <h2 className="text-xl font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-              {selectedChat.name}
-            </h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-              {selectedChat.messages?.length} messages
-            </p>
+        <div className="mb-6 p-4 bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border border-white/30 dark:border-gray-700/30 rounded-2xl">
+          {selectedChat ? (
+            <>
+              <h2 className="text-xl font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                {selectedChat.name}
+              </h2>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                {selectedChat.messages?.length} messages
+              </p>
+            </>
+          ) : (
+            <>
+              <h2 className="text-xl font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                New Conversation
+              </h2>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                0 messages
+              </p>
+            </>
+          )}
+          {/* Current Agent Display */}
+          <div className="mt-3 flex items-center gap-2">
+            <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Active Agent:</span>
+            <span className="text-xs px-2 py-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-full">
+              {agent === 'langgraph-agent' ? '🤖 LangGraph Agent' : 
+               agent === 'llama-3.1-8b' ? '🦙 Llama 3.1 8B' : 
+               agent === 'gpt-3.5-turbo' ? '⚡ GPT-3.5 Turbo' : agent}
+            </span>
           </div>
-        )}
+        </div>
         
         {/* Messages Container */}
         <div ref={containerRef} className='flex-1 overflow-y-auto px-2 pb-32'>
@@ -116,17 +137,16 @@ useEffect(() => {
           <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-2xl blur-xl"></div>
           <form onSubmit={onSubmit} className='relative bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/30 dark:border-gray-700/30 rounded-2xl p-4 shadow-2xl'>
             <div className="flex flex-col md:flex-row gap-4 items-end">
-              {/* Model selector */}
+              {/* AI Agent selector */}
               <div className="flex-shrink-0">
                 <select 
-                  onChange={(e) => setModel(e.target.value)} 
-                  value={model} 
+                  onChange={(e) => setAgent(e.target.value)} 
+                  value={agent} 
                   className="px-4 py-2 bg-white/70 dark:bg-gray-700/70 backdrop-blur-sm border border-gray-200/50 dark:border-gray-600/50 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
                 >
-                  <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
-                  <option value="gpt-4">GPT-4</option>
-                  <option value="gpt-4-turbo">GPT-4 Turbo</option>
-                  <option value="gpt-4-vision-preview">GPT-4 Vision</option>
+                  <option value="langgraph-agent">🤖 LangGraph Agent (Smart Routing)</option>
+                  <option value="llama-3.1-8b">🦙 Llama 3.1 8B</option>
+                  <option value="gpt-3.5-turbo">⚡ GPT-3.5 Turbo</option>
                 </select>
               </div>
               

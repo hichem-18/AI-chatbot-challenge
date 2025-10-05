@@ -99,12 +99,7 @@ api.interceptors.request.use(
     config.headers['Accept-Language'] = language;
     
     // Log request in development
-    if (import.meta.env.DEV) {
-      console.log(`🚀 ${config.method?.toUpperCase()} ${config.url}`, {
-        headers: config.headers,
-        data: config.data
-      });
-    }
+    
     
     return config;
   },
@@ -117,14 +112,7 @@ api.interceptors.request.use(
 // Response interceptor - Handle responses and errors
 api.interceptors.response.use(
   (response) => {
-    // Log successful responses in development
-    if (import.meta.env.DEV) {
-      console.log(`✅ ${response.config.method?.toUpperCase()} ${response.config.url}`, {
-        status: response.status,
-        data: response.data
-      });
-    }
-    
+  
     return response;
   },
   (error) => {
@@ -241,9 +229,15 @@ export const authAPI = {
 
 export const chatAPI = {
   /**
-   * Send message using LangGraph agent
+   * Send message - routes to correct endpoint based on model
    */
-  sendMessage: (messageData) => api.post('/chat/message', messageData),
+  sendMessage: (messageData) => {
+    // Route langgraph-agent to main endpoint, others to simple endpoint
+    const endpoint = messageData.model_name === 'langgraph-agent' 
+      ? '/chat/message' 
+      : '/chat/simple';
+    return api.post(endpoint, messageData);
+  },
   
   /**
    * Send simple message using LangChain
@@ -321,10 +315,6 @@ export const apiHelpers = {
       const data = apiHelpers.handleResponse(response);
       
       if (onSuccess) onSuccess(data);
-      if (showNotification?.success) {
-        // You can integrate with a notification system here
-        console.log('Success:', showNotification.success);
-      }
       
       return data;
       

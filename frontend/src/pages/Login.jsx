@@ -86,14 +86,10 @@ const Login = () => {
     setLoading(true);
 
     try {
-      console.log('🔄 Attempting login with:', { email: formData.email });
-      
       const result = await login({
         email: formData.email,
         password: formData.password
       });
-      
-      console.log('✅ Login successful:', result.user.email);
       
       // Store remember me preference
       if (formData.rememberMe) {

@@ -21,20 +21,6 @@ const Home = () => {
         
         <Navigation />
         
-        {/* Demo Mode Banner */}
-        <div className="relative z-10 bg-gradient-to-r from-yellow-400/20 to-orange-400/20 backdrop-blur-md border-l-4 border-yellow-500 p-4 shadow-lg">
-          <div className="flex items-center max-w-7xl mx-auto">
-            <div className="flex-shrink-0">
-              <span className="text-2xl animate-bounce">🎭</span>
-            </div>
-            <div className="ml-3">
-              <p className="text-sm text-yellow-800 dark:text-yellow-200 font-medium">
-                <strong>Frontend Testing Mode:</strong> You're logged in as <code className="bg-yellow-200/50 dark:bg-yellow-800/50 px-2 py-1 rounded">{user.name}</code> ({user.email}) with dummy data. 
-                All UI components are working! 🚀
-              </p>
-            </div>
-          </div>
-        </div>
         
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           {/* Hero Section */}
@@ -47,7 +33,7 @@ const Home = () => {
               <div className="absolute -top-2 -right-2 w-8 h-8 bg-green-400 rounded-full"></div>
             </div>
             <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-6 animate-fade-in-up">
-              {t('home.welcomeBack')}, {user.name}!
+              {t('home.welcomeBack')} !
             </h1>
             <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed">
               {t('home.readyToChat')}
@@ -188,7 +174,7 @@ const Home = () => {
                 <div className="absolute inset-0 bg-gradient-to-br from-pink-600/10 to-orange-600/10 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
                 <div className="relative bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl p-8 rounded-2xl shadow-lg border border-white/30 dark:border-gray-700/30 transition-all duration-300 group-hover:shadow-xl group-hover:scale-105">
                   <div className="w-16 h-16 bg-gradient-to-br from-pink-500 to-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:rotate-6">
-                    <span className="text-3xl">�</span>
+                    <span className="text-3xl">🔒</span>
                   </div>
                   <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
                     {t('features.secure')}

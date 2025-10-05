@@ -10,7 +10,6 @@ import { authAPI, tokenManager } from '../utils/api.js';
  */
 export const registerUser = async (userData) => {
   try {
-    console.log('🔄 AuthService: Registering user', userData.email);
     
     const response = await authAPI.signup(userData);
     
@@ -20,7 +19,6 @@ export const registerUser = async (userData) => {
     if (token) {
       // Save token to localStorage
       tokenManager.setToken(token);
-      console.log('✅ AuthService: Token saved, user registered');
     }
     
     return {
@@ -47,7 +45,6 @@ export const registerUser = async (userData) => {
  */
 export const loginUser = async (credentials) => {
   try {
-    console.log('🔄 AuthService: Logging in user', credentials.email);
     
     const response = await authAPI.login(credentials);
     
@@ -57,7 +54,6 @@ export const loginUser = async (credentials) => {
     if (token) {
       // Save token to localStorage
       tokenManager.setToken(token);
-      console.log('✅ AuthService: Token saved, user logged in');
     }
     
     return {
@@ -83,7 +79,6 @@ export const loginUser = async (credentials) => {
  */
 export const getCurrentUser = async () => {
   try {
-    console.log('🔄 AuthService: Getting current user');
     
     // Check if token exists and is valid
     if (!tokenManager.isAuthenticated()) {
@@ -123,12 +118,10 @@ export const getCurrentUser = async () => {
  */
 export const logoutUser = async () => {
   try {
-    console.log('🔄 AuthService: Logging out user');
     
     // Remove token from localStorage
     await authAPI.logout();
     
-    console.log('✅ AuthService: User logged out');
     
     return {
       success: true
@@ -169,7 +162,6 @@ export const getUserInfo = () => {
  */
 export const updateUserProfile = async (userData) => {
   try {
-    console.log('🔄 AuthService: Updating user profile');
     
     const response = await authAPI.updateProfile(userData);
     
