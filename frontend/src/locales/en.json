@@ -33,7 +33,30 @@
     "alreadyHaveAccount": "Already have an account?",
     "dontHaveAccount": "Don't have an account?",
     "switchToLogin": "Sign in here",
-    "switchToSignup": "Sign up here"
+    "switchToSignup": "Sign up here",
+    "loginSubtitle": "Sign in to continue your conversation",
+    "signupSubtitle": "Join us and start your AI journey",
+    "emailPlaceholder": "Enter your email",
+    "passwordPlaceholder": "Enter your password",
+    "usernamePlaceholder": "Choose a username",
+    "confirmPasswordPlaceholder": "Confirm your password",
+    "signingIn": "Signing In...",
+    "creatingAccount": "Creating Account...",
+    "emailInvalid": "Please enter a valid email address",
+    "passwordMinLength": "Password must be at least 8 characters",
+    "passwordWeak": "Password must contain uppercase, lowercase, and number",
+    "passwordFair": "Fair",
+    "passwordGood": "Good",
+    "passwordStrong": "Strong",
+    "passwordStrength": "Password Strength",
+    "usernameMinLength": "Username must be at least 3 characters",
+    "usernameInvalid": "Username can only contain letters, numbers, and underscores",
+    "confirmPasswordRequired": "Please confirm your password",
+    "languagePreference": "Language Preference",
+    "agreeToTerms": "I agree to the",
+    "termsOfService": "Terms of Service",
+    "privacyPolicy": "Privacy Policy",
+    "agreeToTermsRequired": "You must agree to the terms and conditions"
   },
   "chat": {
     "newChat": "New Chat",
@@ -60,16 +83,33 @@
       "gpt-4": "GPT-4"
     },
     "summary": "Get Summary",
-    "summaryGenerated": "Summary generated successfully"
+    "summaryGenerated": "Summary generated successfully",
+    "searchConversations": "Search conversations...",
+    "recentChats": "Recent Chats",
+    "noConversations": "No conversations yet",
+    "messages": "messages"
   },
   "profile": {
     "title": "Profile",
+    "subtitle": "Manage your account and preferences",
+    "notLoggedIn": "Please log in to view your profile",
+    "userInfo": "User Information",
+    "email": "Email Address",
+    "language": "Language Preference",
+    "statistics": "Statistics",
+    "totalConversations": "Total Conversations",
+    "totalMessages": "Total Messages",
+    "aiSummary": "AI-Generated Summary",
+    "regenerate": "Regenerate",
+    "generating": "Generating...",
+    "lastUpdated": "Last Updated",
+    "accountActions": "Account Actions",
+    "deleteAccount": "Delete Account",
+    "confirmDelete": "Confirm Account Deletion",
+    "deleteWarning": "This action cannot be undone. All your conversations and data will be permanently deleted.",
+    "confirmDeleteButton": "Delete Forever",
     "personalInfo": "Personal Information",
     "preferences": "Preferences",
-    "language": "Language",
-    "statistics": "Chat Statistics",
-    "totalMessages": "Total Messages",
-    "totalConversations": "Total Conversations",
     "arabicMessages": "Arabic Messages",
     "englishMessages": "English Messages",
     "lastActivity": "Last Activity",
@@ -91,6 +131,7 @@
     "edit": "Edit",
     "delete": "Delete",
     "back": "Back",
+    "and": "and",
     "next": "Next",
     "previous": "Previous",
     "search": "Search",
@@ -128,5 +169,31 @@
     "weeksAgo": "{{count}} weeks ago",
     "monthAgo": "a month ago",
     "monthsAgo": "{{count}} months ago"
+  },
+  "features": {
+    "multilingual": "Multi-Language",
+    "multilingualDesc": "Support for English and Arabic with proper RTL layout",
+    "smartAI": "Smart AI",
+    "smartAIDesc": "Powered by advanced AI models for intelligent conversations",
+    "secure": "Secure & Private",
+    "secureDesc": "Your conversations are encrypted and privacy-focused"
+  },
+  "footer": {
+    "copyright": "© 2025 AI Chatbot. Experience the future of conversation."
+  },
+  "languages": {
+    "english": "English",
+    "arabic": "العربية"
+  },
+  "home": {
+    "welcomeBack": "Welcome back",
+    "readyToChat": "Ready to continue your AI conversations?",
+    "startChat": "Start New Chat",
+    "startChatDesc": "Begin a conversation with our AI assistant",
+    "profile": "View Profile",
+    "profileDesc": "Manage your account and preferences",
+    "stats": "Your Statistics",
+    "statsDesc": "Track your conversation activity",
+    "features": "What You Can Do"
   }
 }

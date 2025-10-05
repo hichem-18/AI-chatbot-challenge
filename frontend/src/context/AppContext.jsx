@@ -14,7 +14,7 @@ export const AppContextProvider = ({ children }) => {
     const [selectedChat, setSelectedChat] = useState(null);
     const [theme, setTheme] = useState(localStorage.getItem("theme") || 'light'); // 'light' or 'dark'
     const fetchUser = async () => {
-        setUser()
+        setUser(dummyUsers)
     } 
     //make dummy data
     const fetchUsersChats = async () => {

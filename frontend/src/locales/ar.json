@@ -33,7 +33,30 @@
     "alreadyHaveAccount": "لديك حساب بالفعل؟",
     "dontHaveAccount": "ليس لديك حساب؟",
     "switchToLogin": "سجل دخولك هنا",
-    "switchToSignup": "أنشئ حسابك هنا"
+    "switchToSignup": "أنشئ حسابك هنا",
+    "loginSubtitle": "سجل دخولك لمتابعة محادثتك",
+    "signupSubtitle": "انضم إلينا وابدأ رحلتك مع الذكاء الاصطناعي",
+    "emailPlaceholder": "أدخل بريدك الإلكتروني",
+    "passwordPlaceholder": "أدخل كلمة المرور",
+    "usernamePlaceholder": "اختر اسم المستخدم",
+    "confirmPasswordPlaceholder": "أكد كلمة المرور",
+    "signingIn": "جاري تسجيل الدخول...",
+    "creatingAccount": "جاري إنشاء الحساب...",
+    "emailInvalid": "يرجى إدخال عنوان بريد إلكتروني صحيح",
+    "passwordMinLength": "يجب أن تكون كلمة المرور 8 أحرف على الأقل",
+    "passwordWeak": "يجب أن تحتوي كلمة المرور على أحرف كبيرة وصغيرة ورقم",
+    "passwordFair": "متوسط",
+    "passwordGood": "جيد",
+    "passwordStrong": "قوي",
+    "passwordStrength": "قوة كلمة المرور",
+    "usernameMinLength": "يجب أن يكون اسم المستخدم 3 أحرف على الأقل",
+    "usernameInvalid": "يمكن أن يحتوي اسم المستخدم على أحرف وأرقام وشرطات سفلية فقط",
+    "confirmPasswordRequired": "يرجى تأكيد كلمة المرور",
+    "languagePreference": "تفضيل اللغة",
+    "agreeToTerms": "أوافق على",
+    "termsOfService": "شروط الخدمة",
+    "privacyPolicy": "سياسة الخصوصية",
+    "agreeToTermsRequired": "يجب الموافقة على الشروط والأحكام"
   },
   "chat": {
     "newChat": "محادثة جديدة",
@@ -60,16 +83,33 @@
       "gpt-4": "جي بي تي ٤"
     },
     "summary": "احصل على ملخص",
-    "summaryGenerated": "تم إنشاء الملخص بنجاح"
+    "summaryGenerated": "تم إنشاء الملخص بنجاح",
+    "searchConversations": "البحث في المحادثات...",
+    "recentChats": "المحادثات الأخيرة",
+    "noConversations": "لا توجد محادثات بعد",
+    "messages": "رسائل"
   },
   "profile": {
     "title": "الملف الشخصي",
+    "subtitle": "إدارة حسابك وتفضيلاتك",
+    "notLoggedIn": "يرجى تسجيل الدخول لعرض ملفك الشخصي",
+    "userInfo": "معلومات المستخدم",
+    "email": "عنوان البريد الإلكتروني",
+    "language": "تفضيل اللغة",
+    "statistics": "الإحصائيات",
+    "totalConversations": "إجمالي المحادثات",
+    "totalMessages": "إجمالي الرسائل",
+    "aiSummary": "ملخص مُولّد بالذكاء الاصطناعي",
+    "regenerate": "إعادة إنشاء",
+    "generating": "جارٍ الإنشاء...",
+    "lastUpdated": "آخر تحديث",
+    "accountActions": "إجراءات الحساب",
+    "deleteAccount": "حذف الحساب",
+    "confirmDelete": "تأكيد حذف الحساب",
+    "deleteWarning": "لا يمكن التراجع عن هذا الإجراء. سيتم حذف جميع محادثاتك وبياناتك نهائياً.",
+    "confirmDeleteButton": "حذف نهائياً",
     "personalInfo": "المعلومات الشخصية",
     "preferences": "التفضيلات",
-    "language": "اللغة",
-    "statistics": "إحصائيات المحادثة",
-    "totalMessages": "إجمالي الرسائل",
-    "totalConversations": "إجمالي المحادثات",
     "arabicMessages": "الرسائل العربية",
     "englishMessages": "الرسائل الإنجليزية",
     "lastActivity": "آخر نشاط",
@@ -91,6 +131,7 @@
     "edit": "تعديل",
     "delete": "حذف",
     "back": "رجوع",
+    "and": "و",
     "next": "التالي",
     "previous": "السابق",
     "search": "بحث",
@@ -128,5 +169,31 @@
     "weeksAgo": "منذ {{count}} أسابيع",
     "monthAgo": "منذ شهر",
     "monthsAgo": "منذ {{count}} شهور"
+  },
+  "features": {
+    "multilingual": "متعدد اللغات",
+    "multilingualDesc": "دعم للغتين الإنجليزية والعربية مع تخطيط RTL المناسب",
+    "smartAI": "ذكاء اصطناعي ذكي",
+    "smartAIDesc": "مدعوم بنماذج ذكاء اصطناعي متقدمة للمحادثات الذكية",
+    "secure": "آمن وخاص",
+    "secureDesc": "محادثاتك مشفرة وتركز على الخصوصية"
+  },
+  "footer": {
+    "copyright": "© 2025 مساعد الذكاء الاصطناعي. اختبر مستقبل المحادثة."
+  },
+  "languages": {
+    "english": "English",
+    "arabic": "العربية"
+  },
+  "home": {
+    "welcomeBack": "مرحباً بك مرة أخرى",
+    "readyToChat": "هل أنت مستعد لمواصلة محادثاتك مع الذكاء الاصطناعي؟",
+    "startChat": "بدء محادثة جديدة",
+    "startChatDesc": "ابدأ محادثة مع مساعد الذكاء الاصطناعي",
+    "profile": "عرض الملف الشخصي",
+    "profileDesc": "إدارة حسابك وتفضيلاتك",
+    "stats": "إحصائياتك",
+    "statsDesc": "تتبع نشاط محادثاتك",
+    "features": "ما يمكنك فعله"
   }
 }

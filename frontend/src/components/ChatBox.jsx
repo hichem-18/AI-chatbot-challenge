@@ -15,6 +15,24 @@ const ChatBox = () => {
   const [model, setModel] = useState('gpt-3.5-turbo');
   const onSubmit = async(e) => {
     e.preventDefault();
+    if (!prompt.trim()) return;
+    
+    // Add user message
+    const userMessage = {
+      content: prompt,
+      role: 'user',
+      timestamp: new Date().toISOString()
+    };
+    
+    // Add bot response (dummy)
+    const botMessage = {
+      content: `Thanks for your message: "${prompt}". This is a demo response.`,
+      role: 'bot',
+      timestamp: new Date().toISOString()
+    };
+    
+    setMessages(prev => [...prev, userMessage, botMessage]);
+    setPrompt('');
   }
     useEffect(() => {
     if (selectedChat) {
@@ -33,32 +51,110 @@ useEffect(() => {
     }
   }, [messages]);
   return (
-    <div className='flex-1 flex flex-col justify-between m-5 md:m-10 xl:mx-30 max-md:mt-14 2xl:pr-40'>
-        <div ref={containerRef} className='flex-1 mb-5 overflow-y-scroll'>
-            {messages.length === 0 && (
-                <div className='h-full flex flex-col items-center justify-center gap-2 text-primary'>
-                    <img src={theme === "dark" ? assets.logo : assets.logo} alt="" className='w-full max-w-56 sm:max-w-68' />
-                    <p className='mt-5 text-4xl sm:text-6xl text-center text-gray-500'>Ask me anything</p>
+    <div className='flex-1 flex flex-col h-full relative p-6 md:p-8'>
+        {/* Chat Header */}
+        {selectedChat && (
+          <div className="mb-6 p-4 bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border border-white/30 dark:border-gray-700/30 rounded-2xl">
+            <h2 className="text-xl font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              {selectedChat.name}
+            </h2>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              {selectedChat.messages?.length} messages
+            </p>
+          </div>
+        )}
+        
+        {/* Messages Container */}
+        <div ref={containerRef} className='flex-1 overflow-y-auto px-2 pb-32'>
+            {messages.length === 0 ? (
+                <div className='h-full flex flex-col items-center justify-center relative'>
+                  {/* Empty State with Glass Effect */}
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/20 to-purple-600/20 rounded-full blur-xl animate-pulse"></div>
+                    <div className='relative w-32 h-32 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-8 shadow-2xl'>
+                      <span className="text-6xl animate-bounce">🤖</span>
+                    </div>
+                  </div>
+                  
+                  <div className="text-center max-w-md mx-auto">
+                    <h2 className='text-3xl md:text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-4'>
+                      Ask me anything
+                    </h2>
+                    <p className="text-gray-600 dark:text-gray-400 text-lg leading-relaxed">
+                      I'm your AI assistant, ready to help with any questions or tasks you have in mind.
+                    </p>
+                    
+                    {/* Suggestion Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
+                      <div className="group relative">
+                        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-indigo-500/20 rounded-xl blur-lg group-hover:blur-xl transition-all duration-300"></div>
+                        <div className="relative bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl p-4 rounded-xl border border-white/30 dark:border-gray-700/30 cursor-pointer hover:scale-105 transition-all duration-300">
+                          <span className="text-2xl mb-2 block">💡</span>
+                          <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Get creative ideas</p>
+                        </div>
+                      </div>
+                      
+                      <div className="group relative">
+                        <div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-xl blur-lg group-hover:blur-xl transition-all duration-300"></div>
+                        <div className="relative bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl p-4 rounded-xl border border-white/30 dark:border-gray-700/30 cursor-pointer hover:scale-105 transition-all duration-300">
+                          <span className="text-2xl mb-2 block">📝</span>
+                          <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Write content</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+            ) : (
+                <div className="space-y-6">
+                  {messages.map((message, index) => <Message key={index} message={message} />)}
                 </div>
             )}
-
-            {messages.map((message, index) => <Message key={index} message={message} />
-            )}
-
         </div>
-        <form onSubmit={onSubmit} className='bg-primary/20 dark:bg-[#583C79]/30 border border-primary border-[#80609f]/30 rounded-full w-full max-w-2xl p-3 pl-4 mx-auto flex gap-4 items-center' action="">
-            <select onChange={(e) => setModel(e.target.value)} value={model} name="model" id="">
-                <option className='text-sm pl03 pr-2 outline-none' value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
-                <option className='text-sm pl03 pr-2 outline-none' value="gpt-4">GPT-4</option>
-                <option className='text-sm pl03 pr-2 outline-none' value="gpt-4-turbo">GPT-4 Turbo</option>
-                <option className='text-sm pl03 pr-2 outline-none' value="gpt-4-vision-preview">GPT-4 Vision</option>
-            </select>
-            <input type="text" value={prompt} onChange={(e) => setPrompt(e.target.value)} placeholder='Type your prompt here...' className='flex-1 w-full text-sm outline-none ' required />
-            <button>
-                <img src={assets.send_icon} alt="" className='w-8 cursor-pointer' />
-            </button>
 
-        </form>
+        {/* Input Form */}
+        <div className="absolute bottom-6 left-6 right-6">
+          <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-2xl blur-xl"></div>
+          <form onSubmit={onSubmit} className='relative bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/30 dark:border-gray-700/30 rounded-2xl p-4 shadow-2xl'>
+            <div className="flex flex-col md:flex-row gap-4 items-end">
+              {/* Model selector */}
+              <div className="flex-shrink-0">
+                <select 
+                  onChange={(e) => setModel(e.target.value)} 
+                  value={model} 
+                  className="px-4 py-2 bg-white/70 dark:bg-gray-700/70 backdrop-blur-sm border border-gray-200/50 dark:border-gray-600/50 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+                >
+                  <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                  <option value="gpt-4">GPT-4</option>
+                  <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                  <option value="gpt-4-vision-preview">GPT-4 Vision</option>
+                </select>
+              </div>
+              
+              {/* Message input */}
+              <div className="flex-1 flex items-end gap-3">
+                <input 
+                  type="text" 
+                  value={prompt} 
+                  onChange={(e) => setPrompt(e.target.value)} 
+                  placeholder='Type your message here...' 
+                  className='flex-1 px-4 py-3 bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm border border-gray-200/50 dark:border-gray-600/50 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200' 
+                  required 
+                />
+                
+                {/* Send button */}
+                <button 
+                  type="submit"
+                  className="group relative p-3 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 rounded-xl text-white shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl blur opacity-0 group-hover:opacity-50 transition-opacity duration-200"></div>
+                  <svg className="relative w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
     </div>
   )
 

@@ -5,12 +5,18 @@ import './i18n' // Initialize i18next before App
 import App from './App.jsx'
 import { BrowserRouter } from 'react-router-dom'
 import { AppContextProvider } from './context/AppContext.jsx'
+import { AuthProvider } from './context/AuthContext.jsx'
+import ErrorBoundary from './components/ErrorBoundary.jsx'
 
 createRoot(document.getElementById('root')).render(
-  <BrowserRouter>
-    <AppContextProvider>  
-      <App />
-    </AppContextProvider>
-  </BrowserRouter>
+  <ErrorBoundary>
+    <BrowserRouter>
+      <AuthProvider>
+        <AppContextProvider>  
+          <App />
+        </AppContextProvider>
+      </AuthProvider>
+    </BrowserRouter>
+  </ErrorBoundary>
 
 )
