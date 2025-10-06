@@ -12,9 +12,19 @@ import {
 } from '../backend/controllers/chatController.js';
 import { authenticateToken } from '../backend/middleware/authMiddleware.js';
 
+// Dynamic CORS configuration
+const getAllowedOrigin = () => {
+  // In production: use FRONTEND_URL from environment
+  // In development: allow localhost origins
+  return process.env.FRONTEND_URL || 
+         process.env.NODE_ENV === 'production' 
+           ? process.env.FRONTEND_URL 
+           : 'http://localhost:5173';
+};
+
 // Enable CORS
 const corsHeaders = {
-  'Access-Control-Allow-Origin': 'https://ai-chatbot-challenge-i2a1.vercel.app',
+  'Access-Control-Allow-Origin': getAllowedOrigin(),
   'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
   'Access-Control-Allow-Credentials': 'true'
