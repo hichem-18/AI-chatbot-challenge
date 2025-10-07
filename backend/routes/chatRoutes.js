@@ -53,6 +53,12 @@ router.get('/history', authenticateToken, chatController.getAllChatHistory);
 router.get('/summary', authenticateToken, chatController.getUserSummary);
 
 /**
+ * Generate user summary
+ * @route POST /api/chat/generate-summary
+ */
+router.post('/generate-summary', authenticateToken, chatController.generateUserSummary);
+
+/**
  * Delete a conversation
  * @route DELETE /api/chat/conversation/:id
  */

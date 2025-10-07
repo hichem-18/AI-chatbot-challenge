@@ -2,17 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
+import { useChatContext } from '../context/ChatContext';
+import { chatAPI } from '../utils/api';
 
 const ProfilePage = () => {
   const { t, i18n } = useTranslation();
   const { user, logout } = useAuth();
+  const { statistics, fetchStatistics } = useChatContext();
   
   // State management
   const [userSummary, setUserSummary] = useState(null);
-  const [statistics, setStatistics] = useState({
-    totalConversations: 0,
-    totalMessages: 0
-  });
   const [loading, setLoading] = useState(false);
   const [summaryLoading, setSummaryLoading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -28,11 +27,8 @@ const ProfilePage = () => {
   const loadUserData = async () => {
     setLoading(true);
     try {
-      // Load user summary and statistics
-      await Promise.all([
-        fetchUserSummary(),
-        fetchStatistics()
-      ]);
+      // Load user summary (statistics are already loaded in ChatContext)
+      await fetchUserSummary();
     } catch (error) {
       console.error('Error loading user data:', error);
     } finally {
@@ -41,21 +37,23 @@ const ProfilePage = () => {
   };
 
   const fetchUserSummary = async () => {
-    // TODO: Implement API call to /api/chat/summary
-    // This will be connected to backend later
-    setUserSummary({
-      summary: "AI-generated user summary will appear here...",
-      lastUpdated: new Date().toISOString()
-    });
-  };
-
-  const fetchStatistics = async () => {
-    // TODO: Implement API call to get user statistics
-    // This will be connected to backend later  
-    setStatistics({
-      totalConversations: 12,
-      totalMessages: 156
-    });
+    try {
+      const response = await chatAPI.getUserSummary({ language: selectedLanguage });
+      
+      if (response.data.success && response.data.data.summary) {
+        setUserSummary({
+          summary: response.data.data.summary.text,
+          lastUpdated: response.data.data.summary.updatedAt
+        });
+      } else {
+        // No summary available yet
+        setUserSummary(null);
+      }
+    } catch (error) {
+      console.error('Error fetching user summary:', error);
+      // Set default message when no summary exists
+      setUserSummary(null);
+    }
   };
 
   const handleLanguageChange = (language) => {
@@ -67,16 +65,20 @@ const ProfilePage = () => {
   const regenerateSummary = async () => {
     setSummaryLoading(true);
     try {
-      // TODO: Implement API call to regenerate summary
-      setTimeout(() => {
+      const response = await chatAPI.generateUserSummary({ language: selectedLanguage });
+      
+      if (response.data.success && response.data.data.summary) {
         setUserSummary({
-          summary: "New AI-generated summary based on recent conversations...",
-          lastUpdated: new Date().toISOString()
+          summary: response.data.data.summary.text,
+          lastUpdated: response.data.data.summary.updatedAt
         });
-        setSummaryLoading(false);
-      }, 2000);
+      } else {
+        // Handle case where generation failed
+        console.warn('Summary generation failed:', response.data.message);
+      }
     } catch (error) {
       console.error('Error regenerating summary:', error);
+    } finally {
       setSummaryLoading(false);
     }
   };
@@ -211,16 +213,46 @@ const ProfilePage = () => {
                     </div>
                   </div>
                   
-                  <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl border border-green-200/50 dark:border-green-700/50">
+                  <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border border-blue-200/50 dark:border-blue-700/50">
                     <div className="flex justify-between items-center">
                       <span className="text-gray-700 dark:text-gray-300 font-medium">
                         {t('profile.totalMessages')}
                       </span>
-                      <span className="text-2xl font-bold text-green-600 dark:text-green-400">
+                      <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                         {statistics.totalMessages}
                       </span>
                     </div>
                   </div>
+                  
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="p-3 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-lg border border-purple-200/50 dark:border-purple-700/50">
+                      <div className="text-center">
+                        <div className="text-sm text-gray-600 dark:text-gray-400">English</div>
+                        <div className="text-xl font-bold text-purple-600 dark:text-purple-400">
+                          {statistics.englishMessages}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-3 bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 rounded-lg border border-orange-200/50 dark:border-orange-700/50">
+                      <div className="text-center">
+                        <div className="text-sm text-gray-600 dark:text-gray-400">العربية</div>
+                        <div className="text-xl font-bold text-orange-600 dark:text-orange-400">
+                          {statistics.arabicMessages}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {statistics.lastActivity && (
+                    <div className="p-3 bg-gradient-to-r from-gray-50 to-slate-50 dark:from-gray-900/20 dark:to-slate-900/20 rounded-lg border border-gray-200/50 dark:border-gray-700/50">
+                      <div className="text-center">
+                        <div className="text-sm text-gray-600 dark:text-gray-400">Last Activity</div>
+                        <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                          {new Date(statistics.lastActivity).toLocaleString()}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -261,17 +293,27 @@ const ProfilePage = () => {
                         <div className="absolute inset-0 rounded-full border-4 border-pink-200 dark:border-pink-800"></div>
                       </div>
                     </div>
-                  ) : (
+                  ) : userSummary ? (
                     <div>
                       <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
-                        {userSummary?.summary}
+                        {userSummary.summary}
                       </p>
-                      {userSummary?.lastUpdated && (
+                      {userSummary.lastUpdated && (
                         <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
                           <span className="mr-2">🕒</span>
                           {t('profile.lastUpdated')}: {new Date(userSummary.lastUpdated).toLocaleDateString()}
                         </div>
                       )}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <div className="text-4xl mb-4">🤖</div>
+                      <p className="text-gray-600 dark:text-gray-400 mb-4">
+                        {t('profile.noSummary') || 'No AI summary available yet'}
+                      </p>
+                      <p className="text-sm text-gray-500 dark:text-gray-500">
+                        {t('profile.noSummaryDesc') || 'Start chatting to generate your personalized summary'}
+                      </p>
                     </div>
                   )}
                 </div>

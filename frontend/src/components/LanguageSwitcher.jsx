@@ -1,13 +1,16 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
 /**
  * LanguageSwitcher Component
  * Allows users to toggle between English and Arabic languages
  * Includes RTL/LTR support and proper font switching
+ * Mobile-friendly with click events instead of hover
  */
 const LanguageSwitcher = ({ className = '' }) => {
   const { i18n } = useTranslation();
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef(null);
 
   const languages = [
     {
@@ -28,6 +31,20 @@ const LanguageSwitcher = ({ className = '' }) => {
 
   const currentLanguage = languages.find(lang => lang.code === i18n.language) || languages[0];
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   const handleLanguageChange = (languageCode) => {
     // Change language
     i18n.changeLanguage(languageCode);
@@ -45,39 +62,48 @@ const LanguageSwitcher = ({ className = '' }) => {
       // Save preference to localStorage
       localStorage.setItem('preferredLanguage', languageCode);
     }
+    
+    // Close dropdown after selection
+    setIsOpen(false);
   };
 
   return (
-    <div className={`relative inline-block text-left ${className}`}>
-      <div className="group">
-        {/* Current Language Button */}
-        <button
-          type="button"
-          className="inline-flex items-center justify-center w-full rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-3 py-2 bg-white dark:bg-gray-800 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors duration-200"
-          id="language-menu-button"
-          aria-expanded="false"
-          aria-haspopup="true"
+    <div className={`relative inline-block text-left ${className}`} ref={dropdownRef}>
+      {/* Current Language Button */}
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="inline-flex items-center justify-center w-full rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-3 py-2 bg-white dark:bg-gray-800 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors duration-200"
+        id="language-menu-button"
+        aria-expanded={isOpen}
+        aria-haspopup="true"
+      >
+        <span className="mr-2 text-lg">{currentLanguage.flag}</span>
+        <span className="hidden sm:inline">{currentLanguage.nativeName}</span>
+        <span className="sm:hidden">{currentLanguage.code.toUpperCase()}</span>
+        <svg
+          className={`-mr-1 ml-2 h-4 w-4 transform transition-transform duration-200 ${
+            isOpen ? 'rotate-180' : ''
+          }`}
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+          aria-hidden="true"
         >
-          <span className="mr-2 text-lg">{currentLanguage.flag}</span>
-          <span className="hidden sm:inline">{currentLanguage.nativeName}</span>
-          <span className="sm:hidden">{currentLanguage.code.toUpperCase()}</span>
-          <svg
-            className="-mr-1 ml-2 h-4 w-4 transform group-hover:rotate-180 transition-transform duration-200"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-            aria-hidden="true"
-          >
-            <path
-              fillRule="evenodd"
-              d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-              clipRule="evenodd"
-            />
-          </svg>
-        </button>
+          <path
+            fillRule="evenodd"
+            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+            clipRule="evenodd"
+          />
+        </svg>
+      </button>
 
-        {/* Dropdown Menu */}
-        <div className="absolute right-0 z-50 mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 focus:outline-none opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform group-hover:translate-y-0 translate-y-1">
+      {/* Dropdown Menu */}
+      <div className={`absolute right-0 z-50 mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 focus:outline-none transition-all duration-200 transform ${
+        isOpen 
+          ? 'opacity-100 visible translate-y-0' 
+          : 'opacity-0 invisible translate-y-1 pointer-events-none'
+      }`}>
           <div className="py-1" role="menu" aria-orientation="vertical" aria-labelledby="language-menu-button">
             {languages.map((language) => (
               <button
@@ -119,7 +145,6 @@ const LanguageSwitcher = ({ className = '' }) => {
             ))}
           </div>
         </div>
-      </div>
     </div>
   );
 };

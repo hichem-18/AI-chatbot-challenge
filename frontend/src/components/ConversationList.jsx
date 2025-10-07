@@ -25,6 +25,8 @@ const ConversationList = () => {
         hasConversations
     } = useChatContext();
     
+
+    
     const [search, setSearch] = useState('');
     const [deletingId, setDeletingId] = useState(null);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
@@ -78,6 +80,8 @@ const ConversationList = () => {
         try {
             const success = await deleteConversation(conversationId);
             if (success) {
+                // No need to call fetchConversations() - ChatContext already updates the state
+                // The component will re-render automatically when conversations state changes
             }
         } catch (error) {
             console.error('❌ Failed to delete conversation:', error);
@@ -182,7 +186,7 @@ const ConversationList = () => {
                 ) : (
                     filteredConversations.map((conversation, index) => {
                         const conversationId = conversation.conversationId || conversation.id;
-                        const uniqueKey = conversationId || `conversation-${index}`;
+                        const uniqueKey = `conv-${conversationId}`;
                         return (
                         <div 
                             onClick={() => handleSelectConversation(conversation)}
@@ -212,11 +216,11 @@ const ConversationList = () => {
                             {/* Delete Button */}
                             <button 
                                 onClick={(e) => handleDeleteConversation(conversation, e)}
-                                disabled={deletingId === conversation.id}
+                                disabled={deletingId === (conversation.conversationId || conversation.id)}
                                 className='hidden group-hover:block p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-red-500 transition-colors disabled:opacity-50'
                                 title={t('chat.deleteConversation') || 'Delete conversation'}
                             >
-                                {deletingId === conversation.id ? (
+                                {deletingId === (conversation.conversationId || conversation.id) ? (
                                     <div className="w-4 h-4 border border-red-500/30 border-t-red-500 rounded-full animate-spin"></div>
                                 ) : (
                                     /* Trash2 Icon */

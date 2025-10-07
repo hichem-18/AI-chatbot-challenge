@@ -5,8 +5,8 @@ const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api',
   timeout: 30000, // 30 seconds timeout
   headers: {
-    'Content-Type': 'application/json',
-  },
+    'Content-Type': 'application/json'
+  }
 });
 
 // Token management utilities
@@ -269,6 +269,11 @@ export const chatAPI = {
    * Get user summary
    */
   getUserSummary: (params = {}) => api.get('/chat/summary', { params }),
+  
+  /**
+   * Generate user summary
+   */
+  generateUserSummary: (data = {}) => api.post('/chat/generate-summary', data),
   
   /**
    * Delete conversation

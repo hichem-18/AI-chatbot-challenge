@@ -2,11 +2,13 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
+import { useChatContext } from '../context/ChatContext';
 import Navigation from '../components/Navigation';
 
 const Home = () => {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const { statistics } = useChatContext();
 
   // Show authenticated user dashboard
   if (user) {
@@ -56,10 +58,10 @@ const Home = () => {
             {/* Start Chat Card */}
             <Link
               to="/chat"
-              className="group relative overflow-hidden"
+              className="group relative block"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-purple-600/20 rounded-2xl blur-xl transition-all duration-300 group-hover:blur-2xl"></div>
-              <div className="relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl p-8 rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/20 transition-all duration-300 group-hover:shadow-2xl group-hover:scale-105 group-hover:bg-white/90 dark:group-hover:bg-gray-800/90">
+              <div className="absolute -inset-1 bg-gradient-to-br from-blue-500/30 to-purple-600/30 rounded-2xl blur-lg opacity-75 group-hover:opacity-100 transition-all duration-300 group-hover:blur-xl"></div>
+              <div className="relative bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl p-8 rounded-2xl shadow-2xl border border-white/30 dark:border-gray-700/30 transition-all duration-300 group-hover:shadow-blue-500/25 group-hover:shadow-2xl group-hover:scale-105 group-hover:bg-white/95 dark:group-hover:bg-gray-800/95">
                 <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-110">
                   <span className="text-4xl">💬</span>
                 </div>
@@ -81,10 +83,10 @@ const Home = () => {
             {/* Profile Card */}
             <Link
               to="/profile"
-              className="group relative overflow-hidden"
+              className="group relative block"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-pink-600/20 to-orange-600/20 rounded-2xl blur-xl transition-all duration-300 group-hover:blur-2xl"></div>
-              <div className="relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl p-8 rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/20 transition-all duration-300 group-hover:shadow-2xl group-hover:scale-105 group-hover:bg-white/90 dark:group-hover:bg-gray-800/90">
+              <div className="absolute -inset-1 bg-gradient-to-br from-pink-500/30 to-orange-500/30 rounded-2xl blur-lg opacity-75 group-hover:opacity-100 transition-all duration-300 group-hover:blur-xl"></div>
+              <div className="relative bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl p-8 rounded-2xl shadow-2xl border border-white/30 dark:border-gray-700/30 transition-all duration-300 group-hover:shadow-pink-500/25 group-hover:shadow-2xl group-hover:scale-105 group-hover:bg-white/95 dark:group-hover:bg-gray-800/95">
                 <div className="w-20 h-20 bg-gradient-to-br from-pink-500 to-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-110">
                   <span className="text-4xl">👤</span>
                 </div>
@@ -104,9 +106,9 @@ const Home = () => {
             </Link>
 
             {/* Stats Card */}
-            <div className="group relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-green-600/20 to-emerald-600/20 rounded-2xl blur-xl"></div>
-              <div className="relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl p-8 rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/20 transition-all duration-300 group-hover:shadow-2xl group-hover:scale-105">
+            <div className="group relative">
+              <div className="absolute -inset-1 bg-gradient-to-br from-green-500/30 to-emerald-500/30 rounded-2xl blur-lg opacity-75 group-hover:opacity-100 transition-all duration-300 group-hover:blur-xl"></div>
+              <div className="relative bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl p-8 rounded-2xl shadow-2xl border border-white/30 dark:border-gray-700/30 transition-all duration-300 group-hover:shadow-green-500/25 group-hover:shadow-2xl group-hover:scale-105 group-hover:bg-white/95 dark:group-hover:bg-gray-800/95">
                 <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
                   <span className="text-4xl">📊</span>
                 </div>
@@ -119,11 +121,23 @@ const Home = () => {
                 <div className="space-y-4">
                   <div className="flex justify-between items-center p-3 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl">
                     <span className="text-gray-600 dark:text-gray-400 font-medium">{t('profile.totalConversations')}</span>
-                    <span className="text-2xl font-bold text-green-600 dark:text-green-400">12</span>
+                    <span className="text-2xl font-bold text-green-600 dark:text-green-400">{statistics.totalConversations}</span>
                   </div>
-                  <div className="flex justify-between items-center p-3 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl">
+                  <div className="flex justify-between items-center p-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl">
                     <span className="text-gray-600 dark:text-gray-400 font-medium">{t('profile.totalMessages')}</span>
-                    <span className="text-2xl font-bold text-green-600 dark:text-green-400">156</span>
+                    <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">{statistics.totalMessages}</span>
+                  </div>
+                  
+                  {/* Additional Language Stats */}
+                  <div className="grid grid-cols-2 gap-2 mt-4">
+                    <div className="text-center p-2 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-lg">
+                      <div className="text-xs text-gray-600 dark:text-gray-400">English</div>
+                      <div className="text-lg font-bold text-purple-600 dark:text-purple-400">{statistics.englishMessages}</div>
+                    </div>
+                    <div className="text-center p-2 bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 rounded-lg">
+                      <div className="text-xs text-gray-600 dark:text-gray-400">العربية</div>
+                      <div className="text-lg font-bold text-orange-600 dark:text-orange-400">{statistics.arabicMessages}</div>
+                    </div>
                   </div>
                 </div>
               </div>

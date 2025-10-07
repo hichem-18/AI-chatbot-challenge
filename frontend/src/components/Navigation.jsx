@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
-import LanguageSwitcher from './LanguageSwitcher';
+import LanguageSwitcher, { CompactLanguageSwitcher } from './LanguageSwitcher';
 
 const Navigation = () => {
   const { t } = useTranslation();
@@ -53,7 +53,9 @@ const Navigation = () => {
 
           {/* Right Side - Language Switcher, User Info, Logout */}
           <div className="flex items-center space-x-4">
-            <LanguageSwitcher />
+            <div className="hidden md:block">
+              <LanguageSwitcher />
+            </div>
             
             {user && (
               <>
@@ -113,6 +115,14 @@ const Navigation = () => {
               >
                 {t('navigation.profile')}
               </Link>
+              
+              {/* Language Switcher for Mobile */}
+              <div className="px-3 py-2 flex items-center justify-between">
+                <span className="text-gray-700 dark:text-gray-300 font-medium">
+                  {t('navigation.language') || 'Language'}
+                </span>
+                <CompactLanguageSwitcher />
+              </div>
               
               {user && (
                 <div className="border-t border-gray-200 dark:border-gray-700 pt-2 mt-2">

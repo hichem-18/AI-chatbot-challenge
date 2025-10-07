@@ -9,7 +9,8 @@
     "profile": "Profile",
     "login": "Login",
     "signup": "Sign Up",
-    "logout": "Logout"
+    "logout": "Logout",
+    "language": "Language"
   },
   "auth": {
     "login": "Login",
@@ -131,7 +132,9 @@
     "userSummary": "User Summary",
     "editProfile": "Edit Profile",
     "saveChanges": "Save Changes",
-    "changesSaved": "Changes saved successfully"
+    "changesSaved": "Changes saved successfully",
+    "noSummary": "No AI summary available yet",
+    "noSummaryDesc": "Start chatting to generate your personalized summary"
   },
   "common": {
     "welcome": "Welcome",

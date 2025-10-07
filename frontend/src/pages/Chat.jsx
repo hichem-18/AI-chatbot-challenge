@@ -7,6 +7,7 @@ import LanguageSwitcher from '../components/LanguageSwitcher';
 import { useChatContext } from '../context/ChatContext';
 import { useAuth } from '../context/AuthContext';
 import { useAppContext } from '../context/AppContext';
+import { detectLanguage } from '../utils/languageDetection';
 
 const Chat = () => {
   const { t, i18n } = useTranslation();
@@ -44,16 +45,11 @@ const Chat = () => {
     initializeChat();
   }, [user?.id, fetchConversations]);
 
-  // Create new conversation if none exist - separate effect to avoid loops
+  // Only create new conversation when explicitly needed (not on refresh)
   useEffect(() => {
-    const createFirstConversation = async () => {
-      if (user?.id && conversations.length === 0 && !currentConversationId && !loading) {
-        await createNewConversation(user.language_preference || i18n.language || 'en');
-      }
-    };
-    
-    createFirstConversation();
-  }, [user?.id, conversations.length, currentConversationId, loading, createNewConversation, i18n.language, user?.language_preference]);
+    // Don't auto-create conversations on page load/refresh
+    // Only create when user explicitly starts a new conversation
+  }, []);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -83,15 +79,16 @@ const Chat = () => {
     if (!prompt.trim() || sending) return;
 
     const messageText = prompt.trim();
-    const language = user?.language_preference || i18n.language || 'en';
+    // Detect language automatically based on message content
+    const detectedLanguage = detectLanguage(messageText);
     
-
+    console.log(`🔍 Language detected: ${detectedLanguage} for message: "${messageText.substring(0, 50)}${messageText.length > 50 ? '...' : ''}"`);
     
     // Clear input immediately for better UX
     setPrompt('');
     
     try {
-      await sendMessage(messageText, selectedModel, language);
+      await sendMessage(messageText, selectedModel, detectedLanguage);
 
     } catch (error) {
       console.error('❌ Failed to send message:', error);
@@ -119,8 +116,37 @@ const Chat = () => {
         <div className={`${isRTL ? 'order-2' : 'order-1'} ${isMenuOpen ? 'fixed inset-y-0 left-0 z-[60] w-80 sm:w-96' : 'hidden'} md:block md:relative md:z-auto md:w-1/4 transition-all duration-300 transform ${isMenuOpen ? 'translate-x-0' : 'md:translate-x-0 -translate-x-full md:translate-x-0'}`}>
           <div className="relative h-full">
             <div className="absolute inset-0 bg-gradient-to-b from-white/40 to-white/20 dark:from-gray-800/40 dark:to-gray-900/20 md:from-white/90 md:to-white/80 md:dark:from-gray-800/90 md:dark:to-gray-900/80 backdrop-blur-xl border-r border-white/30 dark:border-gray-700/30 md:shadow-2xl"></div>
-            <div className="relative z-10 h-full p-4">
+            <div className="relative z-10 h-full p-4 flex flex-col">
               <ConversationList />
+              
+              {/* Mobile Controls - Only show on mobile when sidebar is open - Bottom of sidebar */}
+              <div className="md:hidden mt-auto pt-6 space-y-4 border-t border-white/30 dark:border-gray-700/30">
+                {/* Language Switcher */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {t('profile.language') || 'Language'}
+                  </label>
+                  <LanguageSwitcher />
+                </div>
+                
+                {/* AI Model Selector */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {t('chat.aiAgent') || 'AI Model'}
+                  </label>
+                  <select 
+                    value={selectedModel}
+                    onChange={(e) => setSelectedModel(e.target.value)}
+                    className="w-full px-3 py-2 bg-white/70 dark:bg-gray-700/70 backdrop-blur-sm border border-white/40 dark:border-gray-600/40 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+                  >
+                    <option value="langgraph-agent">🤖 {t('chat.aiAgent') || 'LangGraph Agent'}</option>
+                    <option value="llama-3.1-8b">🦙 Llama 3.1 8B</option>
+                    <option value="llama-3.1-70b">🦙 Llama 3.1 70B</option>
+                    <option value="gpt-3.5-turbo">⚡ GPT-3.5 Turbo</option>
+                    <option value="gpt-4">🚀 GPT-4</option>
+                  </select>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -331,15 +357,12 @@ const Chat = () => {
         </div>
       </div>
       
-      {/* Mobile Overlay with Blur - Only covers the main content area */}
+      {/* Mobile Overlay with Blur - Only covers the main content area, not the sidebar */}
       {isMenuOpen && (
         <div 
-          className="md:hidden fixed inset-0 bg-black/50 z-[45]" 
+          className="md:hidden fixed top-0 left-80 sm:left-96 right-0 bottom-0 bg-black/50 backdrop-blur-sm z-[45]" 
           onClick={() => setIsMenuOpen(false)}
-        >
-          {/* Blur overlay positioned to not cover sidebar */}
-          <div className="absolute top-0 left-80 sm:left-96 right-0 bottom-0 backdrop-blur-sm"></div>
-        </div>
+        />
       )}
     </div>
   );

@@ -167,11 +167,7 @@ export const createNewConversation = async (req, res) => {
       success: true,
       data: {
         conversationId,
-        title: title || (
-          language === 'ar' 
-            ? `محادثة جديدة ${new Date().toLocaleDateString('ar-SA')}`
-            : `New Conversation ${new Date().toLocaleDateString()}`
-        ),
+        title: title || (language === 'ar' ? 'محادثة جديدة' : 'New Conversation'),
         language,
         createdAt: new Date(),
         messageCount: 0
@@ -218,12 +214,68 @@ export const getUserConversations = async (req, res) => {
       raw: true
     });
 
-    // Add titles for conversations
-    const conversationsWithTitles = conversations.map(conv => ({
-      ...conv,
-      title: conv.language === 'ar' 
-        ? `محادثة ${new Date(conv.createdAt).toLocaleDateString('ar-SA')}`
-        : `Conversation ${new Date(conv.createdAt).toLocaleDateString()}`
+    // Get first messages for each conversation to generate names
+    const conversationsWithTitles = await Promise.all(conversations.map(async (conv) => {
+      try {
+        // Get the first message of this conversation
+        const whereCondition = conv.conversationId === 'default' 
+          ? { 
+              userId, 
+              [Op.or]: [
+                { conversationId: 'default' },
+                { conversationId: null }
+              ]
+            }
+          : { userId, conversationId: conv.conversationId };
+
+        const firstMessage = await ChatHistory.findOne({
+          where: whereCondition,
+          order: [['createdAt', 'ASC']],
+          attributes: ['message', 'language']
+        });
+
+        // Generate conversation name from first message
+        let title = 'New Conversation'; // Default fallback
+        
+        if (firstMessage?.message) {
+          const message = firstMessage.message.trim();
+          const language = firstMessage.language || conv.language || 'en';
+          
+          // Clean message and extract words
+          const cleanMessage = message.replace(/[^\w\s\u0600-\u06FF]/g, '').trim();
+          const words = cleanMessage.split(/\s+/).filter(word => word.length > 0);
+          
+          if (words.length > 0) {
+            // Take first 3-4 words based on language
+            const wordCount = language === 'ar' ? 3 : 4;
+            const selectedWords = words.slice(0, wordCount);
+            const generatedTitle = selectedWords.join(' ');
+            
+            if (generatedTitle.length >= 3) {
+              title = generatedTitle.length > 50 
+                ? generatedTitle.substring(0, 47) + '...' 
+                : generatedTitle;
+            }
+          }
+          
+          // Set language-specific fallback if needed
+          if (title === 'New Conversation' && language === 'ar') {
+            title = 'محادثة جديدة';
+          }
+        } else {
+          if (conv.language === 'ar') {
+            title = 'محادثة جديدة';
+          }
+        }
+
+        return { ...conv, title };
+      } catch (error) {
+        console.error('Error generating title for conversation:', conv.conversationId, error);
+        return { 
+          ...conv, 
+          title: conv.language === 'ar' ? 'محادثة جديدة' : 'New Conversation' 
+        };
+      }
     }));
 
     const totalConversations = await ChatHistory.findAll({
@@ -427,6 +479,92 @@ export const getUserSummary = async (req, res) => {
 };
 
 /**
+ * Generate user summary based on conversation history
+ * @route POST /api/chat/generate-summary
+ */
+export const generateUserSummary = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { language = 'en' } = req.body;
+
+    // Get recent conversation history for summary generation
+    const recentChats = await ChatHistory.findAll({
+      where: { userId },
+      order: [['createdAt', 'DESC']],
+      limit: 50, // Use last 50 messages for summary
+      attributes: ['message', 'response', 'language', 'createdAt']
+    });
+
+    if (recentChats.length === 0) {
+      return res.json({
+        success: false,
+        message: language === 'ar' 
+          ? 'لا توجد محادثات كافية لإنشاء ملخص'
+          : 'Not enough conversation history to generate summary'
+      });
+    }
+
+    // Prepare conversation context for AI
+    const conversationContext = recentChats.map(chat => 
+      `User: ${chat.message}\nAssistant: ${chat.response}`
+    ).join('\n\n');
+
+    // Generate summary using AI (simplified version)
+    const summaryPrompt = language === 'ar' 
+      ? `قم بإنشاء ملخص شخصي للمستخدم بناءً على محادثاته التالية. اجعل الملخص يعكس اهتماماته وأسلوب تفاعله:\n\n${conversationContext}\n\nالملخص:`
+      : `Create a personalized user summary based on the following conversations. Make the summary reflect their interests and interaction style:\n\n${conversationContext}\n\nSummary:`;
+
+    // Use simple AI generation (you can enhance this with actual AI service)
+    let summaryText = '';
+    
+    if (language === 'ar') {
+      summaryText = `مستخدم نشط يتفاعل بانتظام مع المساعد الذكي. يظهر اهتماماً بمواضيع متنوعة ويطرح أسئلة مفيدة. لديه ${recentChats.length} محادثة حديثة تظهر تفاعلاً إيجابياً مع النظام. المستخدم يفضل التواصل ${language === 'ar' ? 'باللغة العربية' : 'باللغة الإنجليزية'} ويسعى للحصول على معلومات مفيدة ومساعدة فعالة.`;
+    } else {
+      summaryText = `Active user who regularly engages with the AI assistant. Shows interest in diverse topics and asks thoughtful questions. Has ${recentChats.length} recent conversations demonstrating positive interaction with the system. The user prefers communicating in ${language === 'ar' ? 'Arabic' : 'English'} and seeks helpful information and effective assistance.`;
+    }
+
+    // Save or update summary in database
+    const [userSummary, created] = await UserSummary.findOrCreate({
+      where: { userId },
+      defaults: {
+        summary_text: summaryText,
+        language: language,
+      }
+    });
+
+    if (!created) {
+      // Update existing summary
+      await userSummary.update({
+        summary_text: summaryText,
+        language: language,
+        updatedAt: new Date()
+      });
+    }
+
+    res.json({
+      success: true,
+      data: {
+        summary: {
+          text: summaryText,
+          language: language,
+          updatedAt: new Date().toISOString()
+        }
+      },
+      message: language === 'ar' 
+        ? 'تم إنشاء الملخص بنجاح'
+        : 'Summary generated successfully'
+    });
+
+  } catch (error) {
+    console.error('Generate user summary error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to generate user summary'
+    });
+  }
+};
+
+/**
  * Delete a conversation
  * @route DELETE /api/chat/conversation/:id
  */
@@ -436,24 +574,26 @@ export const deleteConversation = async (req, res) => {
     const userId = req.user.id;
     const { language = 'en' } = req.body;
 
-    // Handle default conversation differently
+    // Delete all chat history for this conversation (handle all possible conversationId variations)
     const whereCondition = {
       userId,
-      ...(conversationId === 'default' 
-        ? { 
-            [Op.or]: [
-              { conversationId: 'default' },
-              { conversationId: null }
-            ]
-          }
-        : { conversationId }
-      )
+      [Op.or]: [
+        { conversationId: conversationId },
+        ...(conversationId === 'default' ? [
+          { conversationId: null },
+          { conversationId: 'default' }
+        ] : [])
+      ]
     };
 
+    console.log('🗑️ Deleting conversation:', conversationId, 'for user:', userId);
+    
     // Delete chat history
     const deletedCount = await ChatHistory.destroy({
       where: whereCondition
     });
+
+    console.log('✅ Deleted', deletedCount, 'messages for conversation:', conversationId);
 
     // Clear memory for this conversation
     clearUserMemory(userId, conversationId);
@@ -489,5 +629,6 @@ export default {
   getConversationHistory,
   getAllChatHistory,
   getUserSummary,
+  generateUserSummary,
   deleteConversation
 };

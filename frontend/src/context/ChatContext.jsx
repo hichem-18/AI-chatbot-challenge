@@ -15,24 +15,86 @@ export const ChatProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState(null);
+  const [conversationsLoaded, setConversationsLoaded] = useState(false);
+  
+  // Statistics state
+  const [statistics, setStatistics] = useState({
+    totalConversations: 0,
+    totalMessages: 0,
+    arabicMessages: 0,
+    englishMessages: 0,
+    lastActivity: null
+  });
 
+  /**
+   * Fetch user statistics from API
+   */
+  const fetchStatistics = useCallback(async (language = 'en') => {
+    try {
+      const response = await chatAPI.getUserSummary({ language });
+      if (response.data.success && response.data.data.statistics) {
+        setStatistics(response.data.data.statistics);
+      }
+    } catch (error) {
+      console.error('Error fetching statistics:', error);
+    }
+  }, []);
+
+  /**
+   * Update statistics locally without API call (for immediate updates)
+   */
+  const updateStatistics = useCallback((updates) => {
+    setStatistics(prev => ({ ...prev, ...updates }));
+  }, []);
+
+  /**
+   * Increment message count in statistics
+   */
+  const incrementMessageCount = useCallback((language = 'en') => {
+    setStatistics(prev => ({
+      ...prev,
+      totalMessages: prev.totalMessages + 1,
+      arabicMessages: language === 'ar' ? prev.arabicMessages + 1 : prev.arabicMessages,
+      englishMessages: language === 'en' ? prev.englishMessages + 1 : prev.englishMessages,
+      lastActivity: new Date().toISOString()
+    }));
+  }, []);
+
+  /**
+   * Update conversation count in statistics
+   */
+  const updateConversationCount = useCallback((increment = true) => {
+    setStatistics(prev => ({
+      ...prev,
+      totalConversations: increment ? prev.totalConversations + 1 : Math.max(0, prev.totalConversations - 1)
+    }));
+  }, []);
 
   // Initialize chat data when user is authenticated
   useEffect(() => {
     const initializeConversations = async () => {
       if (isAuthenticated && user) {
         await fetchConversations();
+        await fetchStatistics(); // Also load initial statistics
       } else {
         // Clear chat data when user logs out
         setConversations([]);
         setCurrentConversationId(null);
         setMessages([]);
         setError(null);
+        setConversationsLoaded(false);
+        setStatistics({
+          totalConversations: 0,
+          totalMessages: 0,
+          arabicMessages: 0,
+          englishMessages: 0,
+          lastActivity: null
+        });
       }
     };
 
     initializeConversations();
-  }, [isAuthenticated, user?.id]); // Only depend on user ID, not the whole user object
+  }, [isAuthenticated, user?.id, fetchStatistics]); // Add fetchStatistics dependency
 
   // Fetch messages when conversation is selected
   useEffect(() => {
@@ -106,6 +168,7 @@ export const ChatProvider = ({ children }) => {
       if (response.data.success) {
         const fetchedConversations = response.data.data || [];
         setConversations(fetchedConversations);
+        setConversationsLoaded(true);
         
         // Auto-select first conversation if none selected
         if (fetchedConversations.length > 0 && !currentConversationId) {
@@ -145,6 +208,9 @@ export const ChatProvider = ({ children }) => {
         
         // Add to conversations list
         setConversations(prev => [newConversation, ...prev]);
+        
+        // Update statistics with new conversation count
+        updateConversationCount(true);
         
         // Select the new conversation
         setCurrentConversationId(newConversation.conversationId);
@@ -243,17 +309,22 @@ export const ChatProvider = ({ children }) => {
     setError(null);
 
     try {
-      if (!currentConversationId || currentConversationId === 'default') {
+      // Only create a new conversation if user is actually sending a message
+      // and there's no current conversation selected
+      let activeConversationId = currentConversationId;
+      
+      if (!activeConversationId || activeConversationId === 'default') {
         const newConversation = await createNewConversation(language);
         if (!newConversation) {
           return null;
         }
+        activeConversationId = newConversation.conversationId;
       }
 
       
       const messageData = {
         message: messageText.trim(),
-        conversationId: currentConversationId,
+        conversationId: activeConversationId,
         language,
         model_name: modelName
       };
@@ -284,14 +355,28 @@ export const ChatProvider = ({ children }) => {
         // Add both messages to current messages
         setMessages(prev => [...prev, userMessage, assistantMessage]);
         
-        // Update the conversation's last message time in the conversations list
-        setConversations(prev => 
-          prev.map(conv => 
-            conv.id === currentConversationId 
-              ? { ...conv, updatedAt: new Date().toISOString() }
-              : conv
-          )
-        );
+        // Update statistics with the new message count (we count 2: user + assistant)
+        incrementMessageCount(language);
+        incrementMessageCount(language); // Count both user and assistant messages
+        
+        // Check if this was the first message in the conversation (to update title)
+        const isFirstMessage = messages.length === 0;
+        
+        if (isFirstMessage) {
+          // Refresh conversations to get the updated title from backend
+          setTimeout(() => {
+            fetchConversations();
+          }, 500);
+        } else {
+          // Update the conversation's last message time in the conversations list
+          setConversations(prev => 
+            prev.map(conv => 
+              (conv.conversationId || conv.id) === activeConversationId 
+                ? { ...conv, lastActivity: new Date().toISOString(), messageCount: (conv.messageCount || 0) + 1 }
+                : conv
+            )
+          );
+        }
         
         return { userMessage, assistantMessage };
       } else {
@@ -322,24 +407,31 @@ export const ChatProvider = ({ children }) => {
       const response = await chatAPI.deleteConversation(conversationId);
       
       if (response.data.success) {
-        
-        // Remove from conversations list
-        setConversations(prev => prev.filter(conv => conv.id !== conversationId));
-        
-        // If this was the current conversation, clear it
-        if (currentConversationId === conversationId) {
-          setCurrentConversationId(null);
-          setMessages([]);
+        // Remove from conversations list (handle both id and conversationId fields)
+        setConversations(prevConversations => {
+          const updatedConversations = prevConversations.filter(conv => {
+            const convId = conv.conversationId || conv.id;
+            return convId !== conversationId;
+          });
           
-          // Auto-select another conversation if available
-          const remainingConversations = conversations.filter(conv => (conv.conversationId || conv.id) !== conversationId);
-          if (remainingConversations.length > 0) {
-            const nextConversation = remainingConversations[0];
+          // If this was the current conversation and we have other conversations, auto-select the first one
+          if (currentConversationId === conversationId && updatedConversations.length > 0) {
+            const nextConversation = updatedConversations[0];
             const nextConversationId = nextConversation.conversationId || nextConversation.id;
-            setCurrentConversationId(nextConversationId);
-            // Messages will be loaded automatically by the useEffect when currentConversationId changes
+            setTimeout(() => {
+              setCurrentConversationId(nextConversationId);
+            }, 50);
+          } else if (currentConversationId === conversationId) {
+            // No conversations left, clear current
+            setCurrentConversationId(null);
+            setMessages([]);
           }
-        }
+          
+          return updatedConversations;
+        });
+        
+        // Update statistics with decreased conversation count
+        updateConversationCount(false);
         
         return true;
       } else {
@@ -385,6 +477,7 @@ export const ChatProvider = ({ children }) => {
     loading,
     sending,
     error,
+    statistics,
     
     // Functions
     fetchConversations,
@@ -395,6 +488,10 @@ export const ChatProvider = ({ children }) => {
     clearError,
     getCurrentConversation,
     resetSendingState,
+    fetchStatistics,
+    updateStatistics,
+    incrementMessageCount,
+    updateConversationCount,
     
     // Computed values
     hasConversations: conversations.length > 0,
