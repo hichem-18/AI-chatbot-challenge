@@ -234,14 +234,15 @@ export const ChatProvider = ({ children }) => {
    * Select a conversation and load its messages
    */
   const selectConversation = useCallback(async (conversationId) => {
-    if (!conversationId) {
-      return;
-    }
-
     setCurrentConversationId(conversationId);
     setError(null);
     
-    // We'll fetch messages in a separate useEffect when currentConversationId changes
+    // If no conversation ID provided, clear messages
+    if (!conversationId) {
+      setMessages([]);
+    }
+    
+    // Messages will be fetched in the useEffect when currentConversationId changes
   }, []);
 
   /**
@@ -296,6 +297,18 @@ export const ChatProvider = ({ children }) => {
       setLoading(false);
     }
   }, [isAuthenticated]);
+
+  /**
+   * Auto-fetch messages when currentConversationId changes
+   */
+  useEffect(() => {
+    if (currentConversationId && currentConversationId !== 'default') {
+      fetchMessages(currentConversationId);
+    } else {
+      // Clear messages if no conversation is selected
+      setMessages([]);
+    }
+  }, [currentConversationId, fetchMessages]);
 
   /**
    * Send a message in the current conversation

@@ -52,6 +52,9 @@ const ConversationList = () => {
         const userLanguage = user?.language_preference || i18n.language || 'en';
         
         try {
+            // Clear any existing conversation selection first
+            selectConversation(null);
+            
             const newConversation = await createNewConversation(userLanguage);
             if (newConversation) {
                 navigate('/chat');

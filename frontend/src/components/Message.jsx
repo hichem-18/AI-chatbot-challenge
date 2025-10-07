@@ -31,6 +31,111 @@ const Message = ({ message }) => {
         return moment(timestamp).fromNow();
     };
 
+    // Format AI message content with basic markdown support
+    const formatAIContent = (content) => {
+        if (!content) return '';
+        
+        // Split content into lines
+        let lines = content.split('\n');
+        let formattedElements = [];
+        let currentList = [];
+        let listType = null; // 'numbered' or 'bullet'
+        
+        lines.forEach((line, index) => {
+            const trimmedLine = line.trim();
+            
+            if (!trimmedLine && currentList.length === 0) {
+                // Empty line - add spacing
+                formattedElements.push(<br key={`br-${index}`} />);
+                return;
+            }
+            
+            // Check for numbered list items (1. 2. 3. etc.)
+            const numberedMatch = trimmedLine.match(/^(\d+)\.\s*(.+)/);
+            if (numberedMatch) {
+                if (listType !== 'numbered') {
+                    // Start new numbered list
+                    if (currentList.length > 0) {
+                        formattedElements.push(createList(currentList, listType, formattedElements.length));
+                        currentList = [];
+                    }
+                    listType = 'numbered';
+                }
+                currentList.push(formatInlineText(numberedMatch[2]));
+                return;
+            }
+            
+            // Check for bullet points (- or *)
+            const bulletMatch = trimmedLine.match(/^[-*]\s*(.+)/);
+            if (bulletMatch) {
+                if (listType !== 'bullet') {
+                    // Start new bullet list
+                    if (currentList.length > 0) {
+                        formattedElements.push(createList(currentList, listType, formattedElements.length));
+                        currentList = [];
+                    }
+                    listType = 'bullet';
+                }
+                currentList.push(formatInlineText(bulletMatch[1]));
+                return;
+            }
+            
+            // If we have a current list and this line doesn't match, close the list
+            if (currentList.length > 0) {
+                formattedElements.push(createList(currentList, listType, formattedElements.length));
+                currentList = [];
+                listType = null;
+            }
+            
+            // Regular text line
+            if (trimmedLine) {
+                formattedElements.push(
+                    <p key={`p-${index}`} className="mb-2 last:mb-0">
+                        {formatInlineText(trimmedLine)}
+                    </p>
+                );
+            }
+        });
+        
+        // Close any remaining list
+        if (currentList.length > 0) {
+            formattedElements.push(createList(currentList, listType, formattedElements.length));
+        }
+        
+        return formattedElements;
+    };
+    
+    // Create list element
+    const createList = (items, type, key) => {
+        const ListComponent = type === 'numbered' ? 'ol' : 'ul';
+        const className = type === 'numbered' 
+            ? "list-decimal list-inside mb-3 ml-4 space-y-1"
+            : "list-disc list-inside mb-3 ml-4 space-y-1";
+            
+        return (
+            <ListComponent key={`list-${key}`} className={className}>
+                {items.map((item, idx) => (
+                    <li key={`item-${idx}`} className="text-sm">
+                        {item}
+                    </li>
+                ))}
+            </ListComponent>
+        );
+    };
+    
+    // Format inline text with bold support
+    const formatInlineText = (text) => {
+        // Handle **bold** text
+        const parts = text.split(/(\*\*.*?\*\*)/g);
+        return parts.map((part, index) => {
+            if (part.startsWith('**') && part.endsWith('**')) {
+                const boldText = part.slice(2, -2);
+                return <strong key={index} className="font-semibold">{boldText}</strong>;
+            }
+            return part;
+        });
+    };
+
     return (
         <div className={`flex w-full my-4 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             {message.role === 'user' ? (
@@ -93,7 +198,7 @@ const Message = ({ message }) => {
                                 />
                             ) : (
                                 <div className={`text-sm break-words reset-tw ${isRTL ? 'text-right' : 'text-left'}`}>
-                                    {message.content}
+                                    {formatAIContent(message.content)}
                                 </div>
                             )}
                         </div>

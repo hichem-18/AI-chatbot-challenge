@@ -101,6 +101,15 @@ const Chat = () => {
     logout();
   };
 
+  const handleNewChat = async () => {
+    try {
+      const userLanguage = user?.language_preference || i18n.language || 'en';
+      await createNewConversation(userLanguage);
+    } catch (error) {
+      console.error('❌ Failed to create new conversation:', error);
+    }
+  };
+
   return (
     <div className={`min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-gray-900 via-indigo-900 to-purple-900 relative overflow-hidden ${isRTL ? 'rtl' : 'ltr'}`}>
       {/* Animated Background Elements */}
