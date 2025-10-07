@@ -63,22 +63,14 @@ app.get('/api/db', async (req, res) => {
 const startServer = async () => {
   try {
     await testConnection();
-    console.log('✅ Database connected successfully');
     
     // Sync database tables (create if they don't exist)
-    console.log('🔄 Syncing database tables...');
     const { sequelize } = await import('./models/index.js');
     await sequelize.sync({ alter: false }); // Don't alter existing tables, just create missing ones
-    console.log('✅ Database tables synchronized');
     
     app.listen(PORT, () => {
-      console.log(`🚀 Server listening on port ${PORT}`);
-      console.log(`📊 Database health check: http://localhost:${PORT}/api/health/db`);
     });
   } catch (error) {
-    console.error('❌ Failed to connect to database:', error);
-    console.error('🔧 Please run: node syncDatabase.js');
-    process.exit(1);
   }
 };
 

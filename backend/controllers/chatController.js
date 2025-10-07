@@ -586,14 +586,12 @@ export const deleteConversation = async (req, res) => {
       ]
     };
 
-    console.log('🗑️ Deleting conversation:', conversationId, 'for user:', userId);
     
     // Delete chat history
     const deletedCount = await ChatHistory.destroy({
       where: whereCondition
     });
 
-    console.log('✅ Deleted', deletedCount, 'messages for conversation:', conversationId);
 
     // Clear memory for this conversation
     clearUserMemory(userId, conversationId);

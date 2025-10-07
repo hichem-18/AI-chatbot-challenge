@@ -82,7 +82,6 @@ const Chat = () => {
     // Detect language automatically based on message content
     const detectedLanguage = detectLanguage(messageText);
     
-    console.log(`🔍 Language detected: ${detectedLanguage} for message: "${messageText.substring(0, 50)}${messageText.length > 50 ? '...' : ''}"`);
     
     // Clear input immediately for better UX
     setPrompt('');
