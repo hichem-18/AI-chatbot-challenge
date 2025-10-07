@@ -15,8 +15,21 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// CORS configuration
+const corsOptions = {
+  origin: [
+    'http://localhost:3000',
+    'http://localhost:8000',
+    'https://ai-chatbot-challenge-frontend.onrender.com',
+    'https://ai-chatbot-challenge-i2a1.vercel.app' // Your existing Vercel deployment
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+};
+
 // Middleware
-app.use(cors()); // Enable CORS for all routes
+app.use(cors(corsOptions)); // Enable CORS with configuration
 app.use(express.json()); // Parse JSON request bodies
 
 // Routes
@@ -61,16 +74,63 @@ app.get('/api/db', async (req, res) => {
 
 // Test database connection on startup
 const startServer = async () => {
+  console.log('\n🚀 Starting AI Chatbot Backend Server...');
+  console.log('=' .repeat(50));
+  
   try {
+    // Log environment configuration
+    console.log('📊 Environment Configuration:');
+    console.log(`   • NODE_ENV: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`   • PORT: ${PORT}`);
+    console.log(`   • Database: ${process.env.NODE_ENV === 'production' ? 'PostgreSQL' : 'SQLite'}`);
+    
+    // Step 1: Test database connection
+    console.log('\n🔌 Step 1: Testing database connection...');
     await testConnection();
+    console.log('✅ Database connection established successfully');
     
-    // Sync database tables (create if they don't exist)
+    // Step 2: Import and sync models
+    console.log('\n📋 Step 2: Importing database models...');
     const { sequelize } = await import('./models/index.js');
-    await sequelize.sync({ alter: false }); // Don't alter existing tables, just create missing ones
+    console.log('✅ Database models imported successfully');
     
+    console.log('\n🔄 Step 3: Syncing database tables...');
+    await sequelize.sync({ alter: false }); // Don't alter existing tables, just create missing ones
+    console.log('✅ Database tables synchronized successfully');
+    
+    // Step 4: Start Express server
+    console.log('\n🌐 Step 4: Starting Express server...');
     app.listen(PORT, () => {
+      console.log('✅ Express server started successfully');
+      console.log('=' .repeat(50));
+      console.log(`🎉 AI Chatbot Backend Server is running!`);
+      console.log(`📡 Server URL: http://localhost:${PORT}`);
+      console.log(`🗄️  Database: ${process.env.NODE_ENV === 'production' ? 'PostgreSQL (Production)' : 'SQLite (Development)'}`);
+      console.log(`🕒 Started at: ${new Date().toLocaleString()}`);
+      console.log('=' .repeat(50));
     });
+    
   } catch (error) {
+    console.log('\n❌ SERVER STARTUP FAILED');
+    console.log('=' .repeat(50));
+    console.error('💥 Fatal Error Details:');
+    console.error(`   • Message: ${error.message}`);
+    console.error(`   • Name: ${error.name}`);
+    console.error(`   • Code: ${error.code || 'N/A'}`);
+    
+    if (error.stack) {
+      console.error('\n📋 Full Stack Trace:');
+      console.error(error.stack);
+    }
+    
+    if (error.original) {
+      console.error('\n🔍 Original Error:');
+      console.error(error.original);
+    }
+    
+    console.log('=' .repeat(50));
+    console.error('🚨 Server startup failed. Exiting process...');
+    process.exit(1);
   }
 };
 
